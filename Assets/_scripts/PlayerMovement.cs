@@ -13,15 +13,11 @@ using UnityEngine.Playables;
 [RequireComponent(typeof(GameMode))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private GameObject _player;
-
     [Header("======| Movement attributes |======")]
     [Header("")]
     [Range(1.0f, 20.0f)]
     [SerializeField] private float _spd;
 
-    [Range(1.0f, 20.0f)]
-    [SerializeField] private float _rotateSpd = 10.0f;
 
     [Header("======| Global Input Action Asset |======")]
     [Header("")]
@@ -41,6 +37,7 @@ public class PlayerMovement : MonoBehaviour
 
     private TalkCameraScript _talkCamScript;
     private PlayerState _playerState;
+    private GameMode _gameMode;
     private Rigidbody _rigidbody;
 
     private Vector3 _dir;
@@ -60,6 +57,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _talkCamScript = GetComponent<TalkCameraScript>();
         _playerState = GetComponent<PlayerState>();
+        _gameMode = GetComponent<GameMode>();
         _rigidbody = GetComponent<Rigidbody>();
 
         #region CommandSetup
@@ -85,7 +83,7 @@ public class PlayerMovement : MonoBehaviour
         _jumpActionReference.action.canceled += JumpAction_canceled;
         #endregion
     }
-    private void FixedUpdate()
+    private void Update()
     {
         UpdateState();
     }
@@ -95,6 +93,7 @@ public class PlayerMovement : MonoBehaviour
         switch (_playerState.GetPlayerState())
         {
             case PlayerState.PlayerStateEnum.IDLE:
+                Debug.Log("WESH ALORS");
                 break;
             case PlayerState.PlayerStateEnum.WALK:
                 Move();
@@ -114,6 +113,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #region InputEvents
+    #region JumpEvents
     private void JumpAction_canceled(InputAction.CallbackContext obj)
     {
         Debug.Log("JumpAction canceled");
@@ -128,7 +128,9 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("JumpAction started");
     }
+    #endregion
 
+    #region SwitchModeEvents
     private void SwitchMode_canceled(InputAction.CallbackContext obj)
     {
         Debug.Log("SwitchMode canceled");
@@ -142,24 +144,25 @@ public class PlayerMovement : MonoBehaviour
     private void SwitchMode_started(InputAction.CallbackContext obj)
     {
         Debug.Log("SwitchMode started");
+        _gameMode.SwitchMode();
     }
-
-   
+    #endregion
 
     #region MovingEvents
     private void Moving_canceled(InputAction.CallbackContext obj)
     {
         //if (_playerState.GetPlayerState() == PlayerState.PlayerStateEnum.TALKING) return;
 
-        //_playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
-        //_moveAmt = Vector2.zero;
+        _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
+        _moveAmt = Vector2.zero;
+
         Debug.Log("Moving canceled");
     }
 
     private void Moving_performed(InputAction.CallbackContext obj)
     {
-        //_moveAmt = _3DMoveActionReference.action.ReadValue<Vector2>();
-        //_lookAmt = _lookAction.ReadValue<Vector2>();
+        _moveAmt = _moveActionReference.action.ReadValue<Vector2>();
+
         Debug.Log("Moving performed");
     }
 
@@ -167,10 +170,11 @@ public class PlayerMovement : MonoBehaviour
     {
         //_playerState.SetState(PlayerState.PlayerStateEnum.WALK);
         Debug.Log("Moving started");
+        _playerState.SetState(PlayerState.PlayerStateEnum.WALK);
     }
     #endregion
 
-    #region SpeakingEvents
+    #region PushItemEvents
     private void PushItem_canceled(InputAction.CallbackContext obj)
     {
         //_playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
@@ -192,8 +196,17 @@ public class PlayerMovement : MonoBehaviour
     #region InputFunction
     private void Move()
     {
-        if (!_isTalking)
-            _rigidbody.MovePosition(new Vector3(_rigidbody.position.x + _moveAmt.x * _spd * Time.deltaTime, _rigidbody.position.y, _rigidbody.position.z + _moveAmt.y * _spd * Time.deltaTime));
+        float x = _rigidbody.position.x + _moveAmt.x * _spd * Time.deltaTime;
+        float z = _rigidbody.position.z + _moveAmt.y * _spd * Time.deltaTime;
+
+        if (_gameMode.Is2DMode())
+        {
+            _rigidbody.MovePosition(new Vector3(x, _rigidbody.position.y, _rigidbody.position.z));
+        }
+        else if (_gameMode.Is3DMode())
+        {
+            _rigidbody.MovePosition(new Vector3(x, _rigidbody.position.y, z));
+        }
     }
 
     private void MoveCamToTalk()

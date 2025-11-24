@@ -11,14 +11,30 @@ public class GameMode : MonoBehaviour
         MENU
     }
 
-    private GMode _currentGameMode = GMode._3D;
+    [SerializeField] private GMode _currentGameMode = GMode._2D;
     public void SetGameMode(GMode newState)
     {
         _currentGameMode = newState;
     }
 
-    public GMode GetPlayerState()
+    public GMode GetGameMode()
     {
         return _currentGameMode;
+    }
+
+    public bool Is2DMode()
+    {
+        return _currentGameMode == GMode._2D;
+    }
+
+    public bool Is3DMode()
+    {
+        return _currentGameMode == GMode._3D;
+    }
+
+    public void SwitchMode()
+    {
+        if (_currentGameMode == GMode._3D) _currentGameMode = GMode._2D;
+        else if (_currentGameMode == GMode._2D) _currentGameMode = GMode._3D;
     }
 }

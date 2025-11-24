@@ -10,7 +10,7 @@ public class PlayerState : MonoBehaviour
         TALKING
     }
 
-    private PlayerStateEnum _currentPlayerState = PlayerStateEnum.IDLE;
+    [SerializeField] private PlayerStateEnum _currentPlayerState = PlayerStateEnum.IDLE;
 
     private static readonly Dictionary<PlayerStateEnum, HashSet<PlayerStateEnum>> _allowedTransitions = new()
     {
