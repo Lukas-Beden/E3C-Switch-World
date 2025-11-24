@@ -69,4 +69,10 @@ public class InteractWithPlayer : MonoBehaviour
             }
         }
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log("BIM CHAK BOOM QUICK MATH");
+        //put here damage logic
+    }
 }

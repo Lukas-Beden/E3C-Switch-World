@@ -663,7 +663,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 669338744508353233, guid: c25bed9cf193e494b861af6326943712, type: 3}
       propertyPath: m_StoppingDistance
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6130133446085812926, guid: c25bed9cf193e494b861af6326943712, type: 3}
       propertyPath: m_LocalPosition.x
