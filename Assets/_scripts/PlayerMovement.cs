@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Playables;
+using UnityEngine.Windows;
 
 
 
@@ -15,8 +16,13 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("======| Movement attributes |======")]
     [Header("")]
-    [Range(1.0f, 20.0f)]
-    [SerializeField] private float _spd;
+    [Range(1.0f, 100.0f)]
+    [SerializeField] private float _3DSpd;
+    [Range(1.0f, 100.0f)]
+    [SerializeField] private float _2DSpd;
+    [SerializeField] private float _acceleration = 20.0f;
+    [SerializeField] private float _brake = 25.0f;
+    [SerializeField] private float _glide = 10.0f;
 
 
     [Header("======| Global Input Action Asset |======")]
@@ -43,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 _dir;
     private Vector2 _moveAmt;
     private Vector2 _lookAmt;
+    private Vector2 _velocity;
 
     private void OnEnable()
     {
@@ -88,12 +95,58 @@ public class PlayerMovement : MonoBehaviour
         UpdateState();
     }
 
+    private void FixedUpdate()
+    {
+        SoapGround();
+    }
+
+    private void SoapGround()
+    {
+        if (_gameMode.Is3DMode() == false) return;
+
+        if (_moveAmt == Vector2.zero)
+        {
+            _velocity = Vector2.MoveTowards(_velocity, Vector2.zero, _glide * Time.deltaTime);
+        }
+        else
+        {
+            Vector2 targetVelocity;
+            bool opposite = Vector2.Dot(_moveAmt, _velocity) < 0;
+
+            if (opposite)
+            {
+                _velocity = Vector2.MoveTowards(_velocity, Vector2.zero, _brake * Time.deltaTime);
+
+                if (_velocity.magnitude < 0.1f)
+                {
+                    Vector2 target = _moveAmt.normalized * _3DSpd;
+                    _velocity = Vector2.MoveTowards(_velocity, target, _acceleration * Time.deltaTime);
+                }
+            }
+            else
+            {
+                Vector2 target = _moveAmt.normalized * _3DSpd;
+                _velocity = Vector2.MoveTowards(_velocity, target, _acceleration * Time.deltaTime);
+            }
+        }
+
+        Vector3 move = new Vector3(_velocity.x, 0, _velocity.y) * Time.deltaTime;
+        _rigidbody.MovePosition(_rigidbody.position + move);
+
+        //if (_gameMode.Is3DMode())
+        //{
+        //    Vector2 target = _moveAmt * _3DSpd;
+        //    _velocity = Vector2.Lerp(_velocity, target, 2.0f * Time.deltaTime);
+        //    Vector3 move = new Vector3(_velocity.x, 0f, _velocity.y) * Time.deltaTime;
+        //    _rigidbody.MovePosition(_rigidbody.position + move);
+        //}
+    }
+
     private void UpdateState()
     {
         switch (_playerState.GetPlayerState())
         {
             case PlayerState.PlayerStateEnum.IDLE:
-                Debug.Log("WESH ALORS");
                 break;
             case PlayerState.PlayerStateEnum.WALK:
                 Move();
@@ -116,34 +169,28 @@ public class PlayerMovement : MonoBehaviour
     #region JumpEvents
     private void JumpAction_canceled(InputAction.CallbackContext obj)
     {
-        Debug.Log("JumpAction canceled");
     }
 
     private void JumpAction_performed(InputAction.CallbackContext obj)
     {
-        Debug.Log("JumpAction performed");
     }
 
     private void JumpAction_started(InputAction.CallbackContext obj)
     {
-        Debug.Log("JumpAction started");
     }
     #endregion
 
     #region SwitchModeEvents
     private void SwitchMode_canceled(InputAction.CallbackContext obj)
     {
-        Debug.Log("SwitchMode canceled");
     }
 
     private void SwitchMode_performed(InputAction.CallbackContext obj)
     {
-        Debug.Log("SwitchMode performed");
     }
 
     private void SwitchMode_started(InputAction.CallbackContext obj)
     {
-        Debug.Log("SwitchMode started");
         _gameMode.SwitchMode();
     }
     #endregion
@@ -155,21 +202,16 @@ public class PlayerMovement : MonoBehaviour
 
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
         _moveAmt = Vector2.zero;
-
-        Debug.Log("Moving canceled");
     }
 
     private void Moving_performed(InputAction.CallbackContext obj)
     {
         _moveAmt = _moveActionReference.action.ReadValue<Vector2>();
-
-        Debug.Log("Moving performed");
     }
 
     private void Moving_started(InputAction.CallbackContext obj)
     {
         //_playerState.SetState(PlayerState.PlayerStateEnum.WALK);
-        Debug.Log("Moving started");
         _playerState.SetState(PlayerState.PlayerStateEnum.WALK);
     }
     #endregion
@@ -178,17 +220,14 @@ public class PlayerMovement : MonoBehaviour
     private void PushItem_canceled(InputAction.CallbackContext obj)
     {
         //_playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
-        Debug.Log("pushItem canceled");
     }
 
     private void PushItem_performed(InputAction.CallbackContext obj)
     {
-        Debug.Log("pushItem performed");
     }
 
     private void PushItem_started(InputAction.CallbackContext obj)
     {
-        Debug.Log("pushItem started");
     }
     #endregion
     #endregion
@@ -196,15 +235,18 @@ public class PlayerMovement : MonoBehaviour
     #region InputFunction
     private void Move()
     {
-        float x = _rigidbody.position.x + _moveAmt.x * _spd * Time.deltaTime;
-        float z = _rigidbody.position.z + _moveAmt.y * _spd * Time.deltaTime;
-
         if (_gameMode.Is2DMode())
         {
+            float x = _rigidbody.position.x + _moveAmt.x * _2DSpd * Time.deltaTime;
+
+
             _rigidbody.MovePosition(new Vector3(x, _rigidbody.position.y, _rigidbody.position.z));
         }
         else if (_gameMode.Is3DMode())
         {
+            float x = _rigidbody.position.x + _moveAmt.x * _3DSpd * Time.deltaTime;
+            float z = _rigidbody.position.z + _moveAmt.y * _3DSpd * Time.deltaTime;
+
             _rigidbody.MovePosition(new Vector3(x, _rigidbody.position.y, z));
         }
     }

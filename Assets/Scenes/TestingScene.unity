@@ -497,6 +497,10 @@ PrefabInstance:
       propertyPath: m_Constraints
       value: 112
       objectReference: {fileID: 0}
+    - target: {fileID: 2453661970178094340, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: m_LinearDamping
+      value: 1000000
+      objectReference: {fileID: 0}
     - target: {fileID: 2992505202566934295, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.62
@@ -540,6 +544,30 @@ PrefabInstance:
     - target: {fileID: 3371856811869101572, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 4396102992187368340, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _2DSpd
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4396102992187368340, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _3DSpd
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4396102992187368340, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _brake
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4396102992187368340, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _glide
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4396102992187368340, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _acceleration
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4396102992187368340, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _decceleration
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
