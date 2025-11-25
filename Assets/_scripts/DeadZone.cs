@@ -3,11 +3,14 @@ using UnityEngine;
 
 public class DeadZone : MonoBehaviour
 {
-    [SerializeField] private GameObject _player; 
+    [SerializeField] private PlayerMovement _player; 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
+        {
+            _player.ResetMovement();
             _player.gameObject.transform.SetPositionAndRotation(GetCloserRespawnCoord(), Quaternion.identity);
+        }
     }
 
     private Vector3 GetCloserRespawnCoord()

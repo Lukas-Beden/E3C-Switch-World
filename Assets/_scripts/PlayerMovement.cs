@@ -20,9 +20,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _3DSpd;
     [Range(1.0f, 100.0f)]
     [SerializeField] private float _2DSpd;
+    [Range(1.0f, 100.0f)]
     [SerializeField] private float _acceleration = 20.0f;
+    [Range(1.0f, 100.0f)]
     [SerializeField] private float _brake = 25.0f;
+    [Range(1.0f, 100.0f)]
     [SerializeField] private float _glide = 10.0f;
+    [Range(1.0f, 15.0f)]
+    [SerializeField] private float _jumpForce = 6.0f;
 
 
     [Header("======| Global Input Action Asset |======")]
@@ -51,6 +56,21 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 _lookAmt;
     private Vector2 _velocity;
 
+    private LayerMask _groundLayer;
+
+    [Header("======| Gravity Changer |======")]
+    [Header("")]
+    [SerializeField] private float _delayMidJump = 1.0f;
+    [SerializeField] private Vector3 _elevateJumpGravity = new Vector3(0f, -3.0f, 0f);
+    [SerializeField] private Vector3 _fallenJumpGravity = new Vector3(0f, -20.0f, 0f);
+    [SerializeField] private Vector3 _defaultGravity = new Vector3(0f, -9.81f, 0f);
+
+
+    private float _timerMidJump = 0.0f;
+
+    private float _timerResetJump = 0.0f;
+    private float _delayResetJump = 1.0f;
+
     private void OnEnable()
     {
         _inputActions.FindActionMap("Gameplay").Enable();
@@ -60,12 +80,19 @@ public class PlayerMovement : MonoBehaviour
     {
         _inputActions.FindActionMap("Gameplay").Disable();
     }
+
+    private void Reset()
+    {
+    }
+
     private void Start()
     {
         _talkCamScript = GetComponent<TalkCameraScript>();
         _playerState = GetComponent<PlayerState>();
         _gameMode = GetComponent<GameMode>();
         _rigidbody = GetComponent<Rigidbody>();
+        _groundLayer = LayerMask.GetMask("Ground");
+
 
         #region CommandSetup
         _pushItemsActionReference.action.Enable();
@@ -93,6 +120,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateState();
+        Debug.Log(_playerState.GetPlayerState());
     }
 
     private void FixedUpdate()
@@ -154,8 +182,13 @@ public class PlayerMovement : MonoBehaviour
             case PlayerState.PlayerStateEnum.TALKING:
                 MoveCamToTalk();
                 break;
+            case PlayerState.PlayerStateEnum.JUMPING:
+                ResetJump();
+                break;
         }
     }
+
+    
 
     private void OnDestroy()
     {
@@ -177,6 +210,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void JumpAction_started(InputAction.CallbackContext obj)
     {
+        if (_playerState.IsJumping()) return;
+
+        Jump();
     }
     #endregion
 
@@ -239,7 +275,6 @@ public class PlayerMovement : MonoBehaviour
         {
             float x = _rigidbody.position.x + _moveAmt.x * _2DSpd * Time.deltaTime;
 
-
             _rigidbody.MovePosition(new Vector3(x, _rigidbody.position.y, _rigidbody.position.z));
         }
         else if (_gameMode.Is3DMode())
@@ -263,6 +298,33 @@ public class PlayerMovement : MonoBehaviour
             _talkCamScript.ZoomOut();
             _isAlreadySpeaking = false;
         }
+    }
+
+    private void Jump()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 0.1f, _groundLayer) && _rigidbody.linearVelocity.z == 0.0f)
+        {
+            _playerState.SetState(PlayerState.PlayerStateEnum.JUMPING);
+            _rigidbody.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
+        }
+    }
+
+    private void ResetJump()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 0.01f, _groundLayer) && _rigidbody.linearVelocity.z != 0.0f) ;
+            _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
+    }
+
+    public void ResetMovement()
+    {
+        _rigidbody.linearVelocity = Vector3.zero;
+        _velocity = Vector3.zero;
     }
 
     //public void APressed()
