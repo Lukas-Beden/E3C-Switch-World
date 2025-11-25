@@ -219,7 +219,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void JumpAction_started(InputAction.CallbackContext obj)
     {
-        if (_playerState.IsJumping()) return;
+        if (_playerState.IsJumping() || _gameMode.Is3DMode()) return;
 
         Jump();
     }
