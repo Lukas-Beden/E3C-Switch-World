@@ -17,9 +17,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("======| Movement attributes |======")]
     [Header("")]
     [Range(1.0f, 100.0f)]
-    [SerializeField] private float _3DSpd;
+    [SerializeField] private float _3DSpd = 30.0f;
     [Range(1.0f, 100.0f)]
-    [SerializeField] private float _2DSpd;
+    [SerializeField] private float _2DSpd = 15.0f;
     [Range(1.0f, 100.0f)]
     [SerializeField] private float _acceleration = 20.0f;
     [Range(1.0f, 100.0f)]
@@ -86,10 +86,6 @@ public class PlayerMovement : MonoBehaviour
         _inputActions.FindActionMap("Gameplay").Disable();
     }
 
-    private void Reset()
-    {
-    }
-
     private void Start()
     {
         _talkCamScript = GetComponent<TalkCameraScript>();
@@ -127,54 +123,6 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateState();
-        //Debug.Log(_playerState.GetPlayerState());
-    }
-
-    private void FixedUpdate()
-    {
-        SoapGround();
-    }
-
-    private void SoapGround()
-    {
-        if (_gameMode.Is3DMode() == false) return;
-
-        if (_moveAmt == Vector2.zero)
-        {
-            _velocity = Vector2.MoveTowards(_velocity, Vector2.zero, _glide * Time.deltaTime);
-        }
-        else
-        {
-            Vector2 targetVelocity;
-            bool opposite = Vector2.Dot(_moveAmt, _velocity) < 0;
-
-            if (opposite)
-            {
-                _velocity = Vector2.MoveTowards(_velocity, Vector2.zero, _brake * Time.deltaTime);
-
-                if (_velocity.magnitude < 0.1f)
-                {
-                    Vector2 target = _moveAmt.normalized * _3DSpd;
-                    _velocity = Vector2.MoveTowards(_velocity, target, _acceleration * Time.deltaTime);
-                }
-            }
-            else
-            {
-                Vector2 target = _moveAmt.normalized * _3DSpd;
-                _velocity = Vector2.MoveTowards(_velocity, target, _acceleration * Time.deltaTime);
-            }
-        }
-
-        Vector3 move = new Vector3(_velocity.x, 0, _velocity.y) * Time.deltaTime;
-        _rigidbody.MovePosition(_rigidbody.position + move);
-
-        //if (_gameMode.Is3DMode())
-        //{
-        //    Vector2 target = _moveAmt * _3DSpd;
-        //    _velocity = Vector2.Lerp(_velocity, target, 2.0f * Time.deltaTime);
-        //    Vector3 move = new Vector3(_velocity.x, 0f, _velocity.y) * Time.deltaTime;
-        //    _rigidbody.MovePosition(_rigidbody.position + move);
-        //}
     }
 
     private void UpdateState()
@@ -182,6 +130,7 @@ public class PlayerMovement : MonoBehaviour
         switch (_playerState.GetPlayerState())
         {
             case PlayerState.PlayerStateEnum.IDLE:
+                _moveAmt = Vector2.zero;
                 break;
             case PlayerState.PlayerStateEnum.WALK:
                 Move();
@@ -190,6 +139,7 @@ public class PlayerMovement : MonoBehaviour
                 MoveCamToTalk();
                 break;
             case PlayerState.PlayerStateEnum.JUMPING:
+                Move();
                 ResetJump();
                 break;
             case PlayerState.PlayerStateEnum.MOVINGOBJECT:
@@ -246,18 +196,17 @@ public class PlayerMovement : MonoBehaviour
         if (_playerState.IsMovingObject()) return;
 
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
-        _moveAmt = Vector2.zero;
     }
 
     private void Moving_performed(InputAction.CallbackContext obj)
     {
         if (_gameMode.Is2DMode() && _moveActionReference.action.ReadValue<Vector2>().y != 0.0f) return;
+        
         _moveAmt = _moveActionReference.action.ReadValue<Vector2>();
     }
 
     private void Moving_started(InputAction.CallbackContext obj)
     {
-        //_playerState.SetState(PlayerState.PlayerStateEnum.WALK);
         _playerState.SetState(PlayerState.PlayerStateEnum.WALK);
     }
     #endregion
@@ -265,7 +214,6 @@ public class PlayerMovement : MonoBehaviour
     #region PushItemEvents
     private void PushItem_canceled(InputAction.CallbackContext obj)
     {
-        //_playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
 
     private void PushItem_performed(InputAction.CallbackContext obj)
@@ -289,32 +237,26 @@ public class PlayerMovement : MonoBehaviour
     private void Move()
     {
         Vector3 movement;
-        Vector3 direction;
-        
+
+        Vector3 direction = Vector3.zero;
 
         if (_gameMode.Is2DMode())
         {
-            float x = _rigidbody.position.x + _moveAmt.x * _2DSpd * Time.deltaTime;
+            direction = new Vector3(_moveAmt.x, 0, 0);
 
-            movement = new Vector3(x, _rigidbody.position.y, _rigidbody.position.z);
-            _rigidbody.MovePosition(movement);
+            Vector3 targetPos = _rigidbody.position + direction * _2DSpd * Time.deltaTime;
+            _rigidbody.MovePosition(targetPos);
         }
         else if (_gameMode.Is3DMode())
         {
-            float x = _rigidbody.position.x + _moveAmt.x * _3DSpd * Time.deltaTime;
-            float z = _rigidbody.position.z + _moveAmt.y * _3DSpd * Time.deltaTime;
+            direction = new Vector3(_moveAmt.x, 0, _moveAmt.y);
 
-            movement = new Vector3(x, _rigidbody.position.y, z);
-
-            _rigidbody.MovePosition(movement);
-
-            
+            _rigidbody.AddForce(direction.normalized * _3DSpd, ForceMode.Acceleration);
         }
 
-        if (_moveAmt.sqrMagnitude > 0.01f)
+        if (direction.sqrMagnitude > 0.01f)
         {
-            Vector3 dir = new Vector3(_moveAmt.x, 0, _moveAmt.y);
-            transform.rotation = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.LookRotation(direction);
         }
     }
 
@@ -346,8 +288,9 @@ public class PlayerMovement : MonoBehaviour
     {
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
+        LayerMask canJumpLayer = _groundLayer + _movableLayer;
 
-        if (Physics.Raycast(ray, out hit, 0.1f, _groundLayer) && _rigidbody.linearVelocity.z == 0.0f)
+        if (Physics.Raycast(ray, out hit, 0.1f, canJumpLayer) && _rigidbody.linearVelocity.z == 0.0f)
         {
             _playerState.SetState(PlayerState.PlayerStateEnum.JUMPING);
             _rigidbody.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
