@@ -251,6 +251,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Moving_performed(InputAction.CallbackContext obj)
     {
+        if (_gameMode.Is2DMode() && _moveActionReference.action.ReadValue<Vector2>().y != 0.0f) return;
         _moveAmt = _moveActionReference.action.ReadValue<Vector2>();
     }
 
@@ -287,18 +288,33 @@ public class PlayerMovement : MonoBehaviour
     #region Movement
     private void Move()
     {
+        Vector3 movement;
+        Vector3 direction;
+        
+
         if (_gameMode.Is2DMode())
         {
             float x = _rigidbody.position.x + _moveAmt.x * _2DSpd * Time.deltaTime;
 
-            _rigidbody.MovePosition(new Vector3(x, _rigidbody.position.y, _rigidbody.position.z));
+            movement = new Vector3(x, _rigidbody.position.y, _rigidbody.position.z);
+            _rigidbody.MovePosition(movement);
         }
         else if (_gameMode.Is3DMode())
         {
             float x = _rigidbody.position.x + _moveAmt.x * _3DSpd * Time.deltaTime;
             float z = _rigidbody.position.z + _moveAmt.y * _3DSpd * Time.deltaTime;
 
-            _rigidbody.MovePosition(new Vector3(x, _rigidbody.position.y, z));
+            movement = new Vector3(x, _rigidbody.position.y, z);
+
+            _rigidbody.MovePosition(movement);
+
+            
+        }
+
+        if (_moveAmt.sqrMagnitude > 0.01f)
+        {
+            Vector3 dir = new Vector3(_moveAmt.x, 0, _moveAmt.y);
+            transform.rotation = Quaternion.LookRotation(dir);
         }
     }
 
@@ -351,10 +367,9 @@ public class PlayerMovement : MonoBehaviour
     #region InteractWithObjectFunctions
     private void DetectObject()
     {
-        Ray ray = new Ray(transform.position, Vector3.forward);
+        Ray ray = new Ray(transform.position, transform.forward);
         RaycastHit hit;
 
-        Debug.DrawRay(transform.position, Vector3.forward, Color.red, 5.0f);
         if (Physics.Raycast(ray, out hit, 3.0f, _movableLayer))
         {
             _playerState.SetState(PlayerState.PlayerStateEnum.MOVINGOBJECT);
@@ -368,7 +383,7 @@ public class PlayerMovement : MonoBehaviour
         float posY = transform.position.y + _tookObject.transform.position.y / 2;
         Vector3 newVec = new Vector3(transform.position.x, posY, transform.position.z);
 
-        _tookObject.transform.position = newVec + Vector3.forward;
+        _tookObject.transform.position = newVec + transform.forward;
     }
     private void DropObject()
     {
