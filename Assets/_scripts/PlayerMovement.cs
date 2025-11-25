@@ -60,6 +60,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 _velocity;
 
     private LayerMask _groundLayer;
+    private LayerMask _movableLayer;
 
     [Header("======| Gravity Changer |======")]
     [Header("")]
@@ -68,6 +69,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector3 _fallenJumpGravity = new Vector3(0f, -20.0f, 0f);
     [SerializeField] private Vector3 _defaultGravity = new Vector3(0f, -9.81f, 0f);
 
+    private GameObject _tookObject;
 
     private float _timerMidJump = 0.0f;
 
@@ -95,9 +97,9 @@ public class PlayerMovement : MonoBehaviour
         _gameMode = GetComponent<GameMode>();
         _rigidbody = GetComponent<Rigidbody>();
         _groundLayer = LayerMask.GetMask("Ground");
+        _movableLayer = LayerMask.GetMask("IsMovable");
 
         transform.position = _spawner.transform.position;
-
 
         #region CommandSetup
         _pushItemsActionReference.action.Enable();
@@ -125,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateState();
-        Debug.Log(_playerState.GetPlayerState());
+        //Debug.Log(_playerState.GetPlayerState());
     }
 
     private void FixedUpdate()
@@ -190,10 +192,12 @@ public class PlayerMovement : MonoBehaviour
             case PlayerState.PlayerStateEnum.JUMPING:
                 ResetJump();
                 break;
+            case PlayerState.PlayerStateEnum.MOVINGOBJECT:
+                Move();
+                MoveObject();
+                break;
         }
     }
-
-    
 
     private void OnDestroy()
     {
@@ -239,7 +243,7 @@ public class PlayerMovement : MonoBehaviour
     #region MovingEvents
     private void Moving_canceled(InputAction.CallbackContext obj)
     {
-        //if (_playerState.GetPlayerState() == PlayerState.PlayerStateEnum.TALKING) return;
+        if (_playerState.IsMovingObject()) return;
 
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
         _moveAmt = Vector2.zero;
@@ -269,11 +273,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void PushItem_started(InputAction.CallbackContext obj)
     {
+        if (_playerState.IsMovingObject())
+            DropObject();
+        else
+            DetectObject();
     }
+
+
     #endregion
     #endregion
 
     #region InputFunction
+    #region Movement
     private void Move()
     {
         if (_gameMode.Is2DMode())
@@ -291,6 +302,14 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void ResetMovement()
+    {
+        _rigidbody.linearVelocity = Vector3.zero;
+        _velocity = Vector3.zero;
+    }
+    #endregion
+
+    #region CamEffect
     private void MoveCamToTalk()
     {
         if (_playerState.GetPlayerState() == PlayerState.PlayerStateEnum.TALKING)
@@ -304,7 +323,9 @@ public class PlayerMovement : MonoBehaviour
             _isAlreadySpeaking = false;
         }
     }
+    #endregion
 
+    #region JumpFunctions
     private void Jump()
     {
         Ray ray = new Ray(transform.position, Vector3.down);
@@ -322,15 +343,39 @@ public class PlayerMovement : MonoBehaviour
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, 0.01f, _groundLayer) && _rigidbody.linearVelocity.z != 0.0f) ;
+        if (Physics.Raycast(ray, out hit, 0.01f, _groundLayer) && _rigidbody.linearVelocity.z != 0.0f)
             _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
+    #endregion
 
-    public void ResetMovement()
+    #region InteractWithObjectFunctions
+    private void DetectObject()
     {
-        _rigidbody.linearVelocity = Vector3.zero;
-        _velocity = Vector3.zero;
+        Ray ray = new Ray(transform.position, Vector3.forward);
+        RaycastHit hit;
+
+        Debug.DrawRay(transform.position, Vector3.forward, Color.red, 5.0f);
+        if (Physics.Raycast(ray, out hit, 3.0f, _movableLayer))
+        {
+            _playerState.SetState(PlayerState.PlayerStateEnum.MOVINGOBJECT);
+            _tookObject = hit.transform.gameObject;
+            // + cameraZoom
+        }
     }
+
+    private void MoveObject()
+    {
+        float posY = transform.position.y + _tookObject.transform.position.y / 2;
+        Vector3 newVec = new Vector3(transform.position.x, posY, transform.position.z);
+
+        _tookObject.transform.position = newVec + Vector3.forward;
+    }
+    private void DropObject()
+    {
+        _tookObject = null;
+        _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
+    }
+    #endregion
 
     //public void APressed()
     //{
