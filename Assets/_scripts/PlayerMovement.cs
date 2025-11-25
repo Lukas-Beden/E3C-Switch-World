@@ -42,6 +42,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private InputActionReference _switchModeActionReference;
     [SerializeField] private InputActionReference _jumpActionReference;
 
+    [Header("======| Init Player |======")]
+    [Header("")]
+    [SerializeField] private GameObject _spawner;
 
     private bool _isAlreadySpeaking = false;
     private bool _isTalking = false;
@@ -92,6 +95,8 @@ public class PlayerMovement : MonoBehaviour
         _gameMode = GetComponent<GameMode>();
         _rigidbody = GetComponent<Rigidbody>();
         _groundLayer = LayerMask.GetMask("Ground");
+
+        transform.position = _spawner.transform.position;
 
 
         #region CommandSetup
