@@ -46,6 +46,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("======| Init Player |======")]
     [Header("")]
     [SerializeField] private GameObject _spawner;
+    [SerializeField] private GameObject _gameModeManager;
 
     private bool _isAlreadySpeaking = false;
     private bool _isTalking = false;
@@ -93,7 +94,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _talkCamScript = GetComponent<TalkCameraScript>();
         _playerState = GetComponent<PlayerState>();
-        _gameMode = GetComponent<GameMode>();
+        _gameMode = _gameModeManager.GetComponent<GameMode>();
         _rigidbody = GetComponent<Rigidbody>();
         _groundLayer = LayerMask.GetMask("Ground");
         _movableLayer = LayerMask.GetMask("IsMovable");
@@ -269,8 +270,6 @@ public class PlayerMovement : MonoBehaviour
     #region Movement
     private void Move()
     {
-        Vector3 movement;
-
         Vector3 direction = Vector3.zero;
 
         if (_gameMode.Is2DMode())
@@ -380,13 +379,11 @@ public class PlayerMovement : MonoBehaviour
         {
             _gameMode.SetGameMode(_gameMode.GetGameModeBeforePause());
             _menuPauseManager.GetComponent<PauseMenuManager>().DisablePauseMenu();
-            Time.timeScale = 1.0f;
         }
         else
         {
             _gameMode.SetGameMode(GameMode.GMode.MENU);
             _menuPauseManager.GetComponent<PauseMenuManager>().EnablePauseMenu();
-            Time.timeScale = 0.0f;
         }
     }
 
