@@ -10,6 +10,8 @@ public class InteractWithPlayer : MonoBehaviour
     [SerializeField] private float _turnSpeed;
 
     [SerializeField] private NavMeshAgent _agent;
+    [Range(0, 10)]
+    [SerializeField] private int _damageOnCollide = 2;
 
     private float _distance;
     private int _indexActualPath = 0;
@@ -72,7 +74,12 @@ public class InteractWithPlayer : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("BIM CHAK BOOM QUICK MATH");
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            _target.GetComponent<HealthSystem>().GetDamage(_damageOnCollide);
+            _target.GetComponent<PlayerMovement>().GetBumped();
+        }
+        
         //put here damage logic
     }
 }

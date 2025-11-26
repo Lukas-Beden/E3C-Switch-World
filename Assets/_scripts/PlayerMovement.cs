@@ -333,6 +333,11 @@ public class PlayerMovement : MonoBehaviour
         _tookObject = null;
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
+
+    public void GetBumped()
+    {
+        Debug.Log("Get Bumped");
+    }
     #endregion
 
     //public void APressed()

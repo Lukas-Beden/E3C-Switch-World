@@ -3,13 +3,23 @@ using UnityEngine;
 
 public class DeadZone : MonoBehaviour
 {
-    [SerializeField] private PlayerMovement _player; 
+    [SerializeField] private GameObject _player;
+    [Range(0, 10)]
+    [SerializeField] private int _damageOnTrigger = 1;
+
+    private PlayerMovement _playerMovement;
+
+    private void Start()
+    {
+        _playerMovement = _player.GetComponent<PlayerMovement>();
+    }
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            _player.ResetMovement();
-            _player.gameObject.transform.SetPositionAndRotation(GetCloserRespawnCoord(), Quaternion.identity);
+            _playerMovement.ResetMovement();
+            _playerMovement.gameObject.transform.SetPositionAndRotation(GetCloserRespawnCoord(), Quaternion.identity);
+            _player.GetComponent<HealthSystem>().GetDamage(_damageOnTrigger);
         }
     }
 
@@ -23,11 +33,11 @@ public class DeadZone : MonoBehaviour
 
         closerRespawn = respawn[0];
 
-        float closestDistanceSqr = (closerRespawn.transform.position - _player.transform.position).sqrMagnitude;
+        float closestDistanceSqr = (closerRespawn.transform.position - _playerMovement.transform.position).sqrMagnitude;
 
         foreach (GameObject obj in respawn)
         {
-            float distanceSqr = (obj.transform.position - _player.transform.position).sqrMagnitude;
+            float distanceSqr = (obj.transform.position - _playerMovement.transform.position).sqrMagnitude;
             if (distanceSqr < closestDistanceSqr)
             {
                 closerRespawn = obj;

@@ -14,8 +14,7 @@ public class HealthSystem : MonoBehaviour
     {
         _health = _maxHealth;
 
-        for (int i = 0; i < _maxHealth; i++)
-            Instantiate(heartPrefab, container);
+        UpdateHealthUI();
     }
 
     public void GetDamage(int damage)
@@ -25,11 +24,20 @@ public class HealthSystem : MonoBehaviour
         if (damage > _health) damage = _health;
 
         _health -= damage;
+        UpdateHealthUI();
 
         if (_health == 0)
         {
             GameOver();
         }
+    }
+
+    private void UpdateHealthUI()
+    {
+        foreach (Transform child in container)
+            Destroy(child.gameObject);
+        for (int i = 0; i < _health; i++)
+            Instantiate(heartPrefab, container);
     }
 
     private void GameOver()
