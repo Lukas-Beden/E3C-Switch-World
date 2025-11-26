@@ -12,6 +12,8 @@ public class InteractWithPlayer : MonoBehaviour
     [SerializeField] private NavMeshAgent _agent;
     [Range(0, 10)]
     [SerializeField] private int _damageOnCollide = 2;
+    [Range(1, 30)]
+    [SerializeField] private int _bumpForce = 6;
 
     private float _distance;
     private int _indexActualPath = 0;
@@ -77,9 +79,7 @@ public class InteractWithPlayer : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             _target.GetComponent<HealthSystem>().GetDamage(_damageOnCollide);
-            _target.GetComponent<PlayerMovement>().GetBumped();
+            _target.GetComponent<PlayerMovement>().GetBumped(transform.forward * _bumpForce);
         }
-        
-        //put here damage logic
     }
 }

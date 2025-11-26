@@ -334,8 +334,9 @@ public class PlayerMovement : MonoBehaviour
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
 
-    public void GetBumped()
+    public void GetBumped(Vector3 direction)
     {
+        _rigidbody.AddForce(direction, ForceMode.Impulse);
         Debug.Log("Get Bumped");
     }
     #endregion
