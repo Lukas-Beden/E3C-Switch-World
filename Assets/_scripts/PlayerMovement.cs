@@ -41,6 +41,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private InputActionReference _moveActionReference;
     [SerializeField] private InputActionReference _switchModeActionReference;
     [SerializeField] private InputActionReference _jumpActionReference;
+    [SerializeField] private InputActionReference _pauseActionReference;
 
     [Header("======| Init Player |======")]
     [Header("")]
@@ -68,6 +69,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Vector3 _elevateJumpGravity = new Vector3(0f, -3.0f, 0f);
     [SerializeField] private Vector3 _fallenJumpGravity = new Vector3(0f, -20.0f, 0f);
     [SerializeField] private Vector3 _defaultGravity = new Vector3(0f, -9.81f, 0f);
+
+    [SerializeField] private GameObject _menuPauseManager;
 
     private GameObject _tookObject;
 
@@ -102,6 +105,7 @@ public class PlayerMovement : MonoBehaviour
         _moveActionReference.action.Enable();
         _switchModeActionReference.action.Enable();
         _jumpActionReference.action.Enable();
+        _pauseActionReference.action.Enable();
 
         _pushItemsActionReference.action.started += PushItem_started;
         _pushItemsActionReference.action.performed += PushItem_performed;
@@ -118,8 +122,26 @@ public class PlayerMovement : MonoBehaviour
         _jumpActionReference.action.started += JumpAction_started;
         _jumpActionReference.action.performed += JumpAction_performed;
         _jumpActionReference.action.canceled += JumpAction_canceled;
+
+        _pauseActionReference.action.started += PauseAction_started;
+        _pauseActionReference.action.performed += PauseAction_performed;
+        _pauseActionReference.action.canceled += PauseAction_canceled;
         #endregion
     }
+
+    private void PauseAction_canceled(InputAction.CallbackContext obj)
+    {
+    }
+
+    private void PauseAction_performed(InputAction.CallbackContext obj)
+    {
+    }
+
+    private void PauseAction_started(InputAction.CallbackContext obj)
+    {
+        PauseMenu();
+    }
+
     private void Update()
     {
         UpdateState();
@@ -127,6 +149,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateState()
     {
+        //temporary, will need another input logic with another ActionMap
+        if (_gameMode.IsMenuMode()) return;
+
         switch (_playerState.GetPlayerState())
         {
             case PlayerState.PlayerStateEnum.IDLE:
@@ -155,6 +180,7 @@ public class PlayerMovement : MonoBehaviour
         _moveActionReference.action.Disable();
         _switchModeActionReference.action.Disable();
         _jumpActionReference.action.Disable();
+        _pauseActionReference.action.Disable();
     }
 
     #region InputEvents
@@ -333,13 +359,27 @@ public class PlayerMovement : MonoBehaviour
         _tookObject = null;
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
+    #endregion
 
     public void GetBumped(Vector3 direction)
     {
         _rigidbody.AddForce(direction, ForceMode.Impulse);
         Debug.Log("Get Bumped");
     }
-    #endregion
+
+    private void PauseMenu()
+    {
+        if (_gameMode.IsMenuMode())
+        {
+            _gameMode.SetGameMode(_gameMode.GetGameModeBeforePause());
+            _menuPauseManager.GetComponent<PauseMenuManager>().DisablePauseMenu();
+        }
+        else
+        {
+            _gameMode.SetGameMode(GameMode.GMode.MENU);
+            _menuPauseManager.GetComponent<PauseMenuManager>().EnablePauseMenu();
+        }
+    }
 
     //public void APressed()
     //{

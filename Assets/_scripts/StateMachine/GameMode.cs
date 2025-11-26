@@ -12,6 +12,8 @@ public class GameMode : MonoBehaviour
     }
 
     [SerializeField] private GMode _currentGameMode = GMode._2D;
+
+    private GMode _gameModeBeforePause;
     public void SetGameMode(GMode newState)
     {
         _currentGameMode = newState;
@@ -22,6 +24,11 @@ public class GameMode : MonoBehaviour
         return _currentGameMode;
     }
 
+    public GMode GetGameModeBeforePause()
+    {
+        return _gameModeBeforePause;
+    }
+
     public bool Is2DMode()
     {
         return _currentGameMode == GMode._2D;
@@ -30,6 +37,14 @@ public class GameMode : MonoBehaviour
     public bool Is3DMode()
     {
         return _currentGameMode == GMode._3D;
+    }
+
+    public bool IsMenuMode()
+    {
+        if (_currentGameMode != GMode.MENU)
+            _gameModeBeforePause = _currentGameMode;
+
+        return _currentGameMode == GMode.MENU;
     }
 
     public void SwitchMode()
