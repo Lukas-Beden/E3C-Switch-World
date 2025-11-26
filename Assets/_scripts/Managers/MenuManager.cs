@@ -9,15 +9,14 @@ using UnityEditor;
 public class MenuManager : MonoBehaviour
 {
 #if UNITY_EDITOR
-    [Header("Référence de scène (éditeur uniquement)")]
-    [Tooltip("Glisse ici ton asset de scène depuis le Project.")]
-    [SerializeField] private SceneAsset sceneAsset;
+    [Header("Scene Reference (editor only)")]
+    [Tooltip("Drag & Drop your scene here.")]
+    [SerializeField] private SceneAsset _startLevel;
 #endif
 
-    [Header("Nom de la scène (utilisé en runtime)")] // Automatiquement remplis quand la scène est drag and drop
     private string sceneName;
 
-    public void LoadScene()
+    public void StartGame()
     {
         if (string.IsNullOrEmpty(sceneName))
         {
@@ -34,12 +33,17 @@ public class MenuManager : MonoBehaviour
         SceneManager.LoadScene(sceneName);
     }
 
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        if (sceneAsset != null)
+        if (_startLevel != null)
         {
-            string path = AssetDatabase.GetAssetPath(sceneAsset);
+            string path = AssetDatabase.GetAssetPath(_startLevel);
             sceneName = Path.GetFileNameWithoutExtension(path);
         }
         else if (!EditorApplication.isPlaying && !EditorApplication.isPlayingOrWillChangePlaymode)
