@@ -1161,7 +1161,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1190293444077568595, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: _3DSpd
-      value: 18
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 1190293444077568595, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: _spawner
@@ -1214,6 +1214,10 @@ PrefabInstance:
     - target: {fileID: 8395506986162351990, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8815302089385845190, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: m_Mass
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8815302089385845190, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: m_LinearDamping
