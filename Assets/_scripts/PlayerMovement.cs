@@ -129,18 +129,7 @@ public class PlayerMovement : MonoBehaviour
         #endregion
     }
 
-    private void PauseAction_canceled(InputAction.CallbackContext obj)
-    {
-    }
-
-    private void PauseAction_performed(InputAction.CallbackContext obj)
-    {
-    }
-
-    private void PauseAction_started(InputAction.CallbackContext obj)
-    {
-        PauseMenu();
-    }
+    
 
     private void Update()
     {
@@ -226,9 +215,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void Moving_performed(InputAction.CallbackContext obj)
     {
-        if (_gameMode.Is2DMode() && _moveActionReference.action.ReadValue<Vector2>().y != 0.0f) return;
-        
-        _moveAmt = _moveActionReference.action.ReadValue<Vector2>();
+        Vector2 move = _moveActionReference.action.ReadValue<Vector2>();
+        float deadzone = 0.01f;
+
+        if (_gameMode.Is2DMode() && Mathf.Abs(move.y) > deadzone) return;
+
+        _moveAmt = move;
     }
 
     private void Moving_started(InputAction.CallbackContext obj)
@@ -256,6 +248,21 @@ public class PlayerMovement : MonoBehaviour
 
 
     #endregion
+
+    #region PauseEvents
+    private void PauseAction_canceled(InputAction.CallbackContext obj)
+    {
+    }
+
+    private void PauseAction_performed(InputAction.CallbackContext obj)
+    {
+    }
+
+    private void PauseAction_started(InputAction.CallbackContext obj)
+    {
+        PauseMenu();
+    }
+    #endregion
     #endregion
 
     #region InputFunction
@@ -270,14 +277,14 @@ public class PlayerMovement : MonoBehaviour
         {
             direction = new Vector3(_moveAmt.x, 0, 0);
 
-            Vector3 targetPos = _rigidbody.position + direction * _2DSpd * Time.deltaTime;
+            Vector3 targetPos = _rigidbody.position + direction * _2DSpd * Time.deltaTime * Time.timeScale;
             _rigidbody.MovePosition(targetPos);
         }
         else if (_gameMode.Is3DMode())
         {
             direction = new Vector3(_moveAmt.x, 0, _moveAmt.y);
 
-            _rigidbody.AddForce(direction.normalized * _3DSpd, ForceMode.Acceleration);
+            _rigidbody.AddForce(direction.normalized * _3DSpd * Time.timeScale, ForceMode.Acceleration);
         }
 
         if (direction.sqrMagnitude > 0.01f)
@@ -373,11 +380,13 @@ public class PlayerMovement : MonoBehaviour
         {
             _gameMode.SetGameMode(_gameMode.GetGameModeBeforePause());
             _menuPauseManager.GetComponent<PauseMenuManager>().DisablePauseMenu();
+            Time.timeScale = 1.0f;
         }
         else
         {
             _gameMode.SetGameMode(GameMode.GMode.MENU);
             _menuPauseManager.GetComponent<PauseMenuManager>().EnablePauseMenu();
+            Time.timeScale = 0.0f;
         }
     }
 

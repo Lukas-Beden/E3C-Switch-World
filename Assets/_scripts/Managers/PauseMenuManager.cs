@@ -44,7 +44,7 @@ public class PauseMenuManager : MonoBehaviour
             _allButtons[i].enabled = true;
             StartCoroutine(MoveAndFadeIn(_allButtons[i], _buttonPositions[i], _transitionDuration));
 
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSecondsRealtime(delay);
         }
     }
 
@@ -58,7 +58,7 @@ public class PauseMenuManager : MonoBehaviour
             _allButtons[i].enabled = false;
             StartCoroutine(MoveAndFadeOut(_allButtons[i], _transitionDuration));
 
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSecondsRealtime(delay);
         }
     }
 
@@ -79,7 +79,7 @@ public class PauseMenuManager : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float time = Mathf.Clamp01(elapsed / duration);
 
             rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, time);
@@ -112,7 +112,7 @@ public class PauseMenuManager : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float time = Mathf.Clamp01(elapsed / duration);
 
             rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, time);
