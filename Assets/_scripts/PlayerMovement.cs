@@ -61,15 +61,16 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector3 _dir;
     private Vector2 _moveAmt;
+    private Vector2 _saveMoveAmt;
     private Vector2 _lookAmt;
     private Vector2 _velocity;
 
     private LayerMask _groundLayer;
     private LayerMask _movableLayer;
 
-    public enum CubeFace { Front, Back, Right, Left, Top, Bottom }
+    private enum CubeFace { Front, Back, Right, Left, Top, Bottom }
 
-    public CubeFace selectedFace;
+    private CubeFace selectedFace;
 
     [Header("======| Gravity Changer |======")]
     [Header("")]
@@ -164,8 +165,10 @@ public class PlayerMovement : MonoBehaviour
         {
             if (move.y > deadzone) return CubeFace.Front;
             if (move.y < -deadzone) return CubeFace.Back;
+
         }
-        return CubeFace.Back;
+
+        return selectedFace;
     }
 
 
@@ -251,6 +254,7 @@ public class PlayerMovement : MonoBehaviour
         if (_playerState.IsMovingObject() == false)
             _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
 
+        _saveMoveAmt = _moveAmt;
         _moveAmt = new Vector3(0, 0, 0);
     }
 
@@ -396,28 +400,31 @@ public class PlayerMovement : MonoBehaviour
     {
         float deadzone = 0.01f;
 
-        if (_moveAmt.sqrMagnitude > deadzone * deadzone)
-        {
-            Physics.IgnoreCollision(GetComponent<Collider>(), _tookObject.GetComponent<Collider>(), true);
+        Physics.IgnoreCollision(GetComponent<Collider>(), _tookObject.GetComponent<Collider>(), true);
 
-            BoxCollider box = _tookObject.GetComponent<BoxCollider>();
+        BoxCollider box = _tookObject.GetComponent<BoxCollider>();
 
-            float angle = Mathf.Atan2(_moveAmt.x, _moveAmt.y) * Mathf.Rad2Deg;
-            Quaternion rot = Quaternion.Euler(0f, angle, 0f);
-            _tookObject.transform.rotation = rot;
+        float angle;
 
-            CubeFace face = GetFaceFromMove(_moveAmt, deadzone);
+        if (_moveAmt == new Vector2(0, 0))
+            angle = Mathf.Atan2(_saveMoveAmt.x, _saveMoveAmt.y) * Mathf.Rad2Deg;
+        else
+            angle = Mathf.Atan2(_moveAmt.x, _moveAmt.y) * Mathf.Rad2Deg;
 
-            Vector3 localOffset = GetFaceLocalOffset(face, _tookObject.transform.localScale);
+        Quaternion rot = Quaternion.Euler(0f, angle, 0f);
+        _tookObject.transform.rotation = rot;
 
-            Vector3 finalPos = _tookObjectPoint.transform.position + _tookObjectPoint.transform.rotation * localOffset;
+        CubeFace face = GetFaceFromMove(_moveAmt, deadzone);
 
-            _tookObject.transform.position = Vector3.MoveTowards(
-                _tookObject.transform.position,
-                finalPos,
-                20f * Time.deltaTime
-            );
-        }
+        Vector3 localOffset = GetFaceLocalOffset(face, _tookObject.transform.localScale);
+
+        Vector3 finalPos = _tookObjectPoint.transform.position + _tookObjectPoint.transform.rotation * localOffset;
+
+        _tookObject.transform.position = Vector3.MoveTowards(
+            _tookObject.transform.position,
+            finalPos,
+            20f * Time.deltaTime
+        );
     }
 
     private void DropObject()
