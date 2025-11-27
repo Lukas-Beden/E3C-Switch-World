@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,9 +38,21 @@ public class HealthSystem : MonoBehaviour
         foreach (Transform child in container)
             Destroy(child.gameObject);
         for (int i = 0; i < _health; i++)
-            Instantiate(heartPrefab, container);
+            StartCoroutine(SpawnHeart(i, 0.5f));
     }
 
+
+    IEnumerator SpawnHeart(int index, float delay)
+    {
+        GameObject heart = Instantiate(heartPrefab, container);
+        RectTransform rect = heart.GetComponent<RectTransform>();
+        CanvasGroup canvasGroup = heart.GetComponent<CanvasGroup>();
+
+        canvasGroup.alpha = 0f;
+
+        yield return new WaitForSecondsRealtime(delay * index);
+        canvasGroup.alpha = 1f;
+    }
     private void GameOver()
     {
         //feedback needed here
