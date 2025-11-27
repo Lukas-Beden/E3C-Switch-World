@@ -1237,6 +1237,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 586801408}
   m_CullTransparentMesh: 1
+--- !u!1 &640522336
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 640522337}
+  m_Layer: 0
+  m_Name: TookObjectPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &640522337
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 640522336}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.47, y: 0, z: 2.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1420096526628053665}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &661326782
 GameObject:
   m_ObjectHideFlags: 0
@@ -2081,6 +2112,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _player: {fileID: 1420096526628053655}
   _damageOnTrigger: 1
+  _movableObjectLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!65 &1438850541
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3401,6 +3435,11 @@ MonoBehaviour:
   _maxHealth: 8
   heartPrefab: {fileID: 2804878981352657168, guid: ab2c90d12c5c8cf4da7892f0aa5739dd, type: 3}
   container: {fileID: 73904230}
+--- !u!4 &1420096526628053665 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8395506986162351990, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+  m_PrefabInstance: {fileID: 8282585591669806540}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2760496639954322723
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3784,6 +3823,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 291547861}
     - target: {fileID: 1190293444077568595, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _tookObjectPoint
+      value: 
+      objectReference: {fileID: 640522336}
+    - target: {fileID: 1190293444077568595, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: _menuPauseManager
       value: 
       objectReference: {fileID: 976150801}
@@ -3791,6 +3834,10 @@ PrefabInstance:
       propertyPath: _pauseActionReference
       value: 
       objectReference: {fileID: -5797355970560131115, guid: 4dab6e3f3dba62345acba0fc2aa8605a, type: 3}
+    - target: {fileID: 1190293444077568595, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      propertyPath: _distanceBetweenObjectPlayer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 4880580501392400344, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: m_Name
       value: Player
@@ -3845,7 +3892,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8395506986162351990, guid: 2c9199993e698fe44978593f44ada904, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 640522337}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4880580501392400344, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       insertIndex: -1

@@ -6,6 +6,7 @@ public class DeadZone : MonoBehaviour
     [SerializeField] private GameObject _player;
     [Range(0, 10)]
     [SerializeField] private int _damageOnTrigger = 1;
+    [SerializeField] private LayerMask _movableObjectLayerMask;
 
     private PlayerMovement _playerMovement;
 
@@ -20,6 +21,11 @@ public class DeadZone : MonoBehaviour
             _playerMovement.ResetMovement();
             _playerMovement.gameObject.transform.SetPositionAndRotation(GetCloserRespawnCoord(), Quaternion.identity);
             _player.GetComponent<HealthSystem>().GetDamage(_damageOnTrigger);
+        }
+
+        if (((1 << other.gameObject.layer) & _movableObjectLayerMask) != 0)
+        {
+            other.gameObject.transform.position = GetCloserRespawnCoord();
         }
     }
 
