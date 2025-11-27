@@ -12,9 +12,9 @@ TagManager:
   - Water
   - UI
   - IsMovable
-  - 
-  - 
-  - 
+  - 2DObject
+  - 3DObject
+  - ActiveIn2D
   - 
   - 
   - 

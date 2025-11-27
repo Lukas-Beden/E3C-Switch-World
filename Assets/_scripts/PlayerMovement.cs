@@ -2,6 +2,8 @@ using NUnit.Framework.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Cinemachine;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,7 +14,6 @@ using UnityEngine.Windows;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(PlayerState))]
-[RequireComponent(typeof(GameMode))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("======| Movement attributes |======")]
@@ -51,6 +52,16 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private GameObject _spawner;
     [SerializeField] private GameObject _gameModeManager;
 
+    [Header("======| Cinemachine Camera |======")]
+    [Header("")]
+    [SerializeField] private CinemachineCamera _camera2D;
+    [SerializeField] private CinemachineCamera _camera3D;
+
+    [Header("======| Switch World |======")]
+    [Header("")]
+    [SerializeField] private GameObject _environment;
+    [SerializeField] private GameObject _map;
+
     private bool _isAlreadySpeaking = false;
     private bool _isTalking = false;
 
@@ -59,14 +70,23 @@ public class PlayerMovement : MonoBehaviour
     private GameMode _gameMode;
     private Rigidbody _rigidbody;
 
+    private Vector3 _oldPlayerPos = new();
+    private Dictionary<GameObject, Vector3> _allEnvironmentGO = new();
+    private Dictionary<GameObject, Vector3> _2DEnvironmentGO = new();
+
     private Vector3 _dir;
     private Vector2 _moveAmt;
     private Vector2 _saveMoveAmt;
     private Vector2 _lookAmt;
     private Vector2 _velocity;
 
-    private LayerMask _groundLayer;
-    private LayerMask _movableLayer;
+    [Header("======| LayerMask |======")]
+    [Header("")]
+    [SerializeField] private LayerMask _groundLayer;
+    [SerializeField] private LayerMask _movableLayer;
+    [SerializeField] private LayerMask _2DObject;
+    [SerializeField] private LayerMask _3DObject;
+    [SerializeField] private LayerMask _setActiveIn2D;
 
     private enum CubeFace { Front, Back, Right, Left, Top, Bottom }
 
@@ -245,6 +265,7 @@ public class PlayerMovement : MonoBehaviour
     private void SwitchMode_started(InputAction.CallbackContext obj)
     {
         _gameMode.SwitchMode();
+        SwitchWorld();
     }
     #endregion
 
@@ -455,6 +476,496 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    #region SwitchWorld
+    private void SwitchWorld()
+    {
+        if (_gameMode.Is2DMode())
+        {
+            SwitchTo2DMode();
+        }
+        else
+        {
+            SwitchTo3DMode();
+        }
+    }
+    #endregion
+
+    #region Switch To 2D Mode
+    private void SwitchTo2DMode()
+    {
+        _allEnvironmentGO.Clear();
+        _2DEnvironmentGO.Clear();
+
+        BoxCollider mapCollider = _map.GetComponent<BoxCollider>();
+        int coordToTeleport = (int)mapCollider.bounds.min.z + 2;
+
+        PositionEnvironmentObjects(coordToTeleport);
+        _oldPlayerPos = gameObject.transform.position;
+
+        // Récupère les objets statiques et mobiles (sans le player)
+        List<GameObject> staticObjects = GetObjectsByLayer(_2DObject);
+        List<GameObject> movableObjects = GetMovableObjects();
+
+        // Place les objets mobiles contre les obstacles et construit la liste complète
+        List<GameObject> allObstacles = ProcessMovableObjects(staticObjects, movableObjects);
+
+        // Traite le player en dernier pour le positionner correctement
+        ProcessPlayer(coordToTeleport, allObstacles);
+
+        SetCameraPriorities(camera2DPriority: 1, camera3DPriority: 0);
+    }
+    #endregion
+
+    #region Switch To 3D Mode
+    private void SwitchTo3DMode()
+    {
+        RestoreEnvironmentPositions();
+        RestorePlayerPosition();
+        SetCameraPriorities(camera2DPriority: 0, camera3DPriority: 1);
+    }
+    #endregion
+
+    #region Environment Positioning
+    private void PositionEnvironmentObjects(int coordToTeleport)
+    {
+        foreach (Transform ts in _environment.transform)
+        {
+            _allEnvironmentGO[ts.gameObject] = ts.position;
+
+            if (ShouldMoveToForeground(ts.gameObject))
+            {
+                MoveObjectToForeground(ts, coordToTeleport);
+            }
+            else
+            {
+                MoveObjectToBackground(ts);
+            }
+        }
+    }
+
+    private bool ShouldMoveToForeground(GameObject obj)
+    {
+        return IsInLayerMask(obj, _movableLayer) ||
+               IsInLayerMask(obj, _2DObject) ||
+               IsInLayerMask(obj, _setActiveIn2D);
+    }
+
+    private void MoveObjectToForeground(Transform ts, int zPosition)
+    {
+        if (IsInLayerMask(ts.gameObject, _setActiveIn2D))
+        {
+            ts.gameObject.SetActive(true);
+        }
+
+        Vector3 newPosition = ts.position;
+        newPosition.z = zPosition;
+        ts.position = newPosition;
+        _2DEnvironmentGO[ts.gameObject] = newPosition;
+    }
+
+    private void MoveObjectToBackground(Transform ts)
+    {
+        Vector3 newPosition = ts.position;
+        newPosition.z = 500f;
+        ts.position = newPosition;
+
+        MeshRenderer renderer = ts.gameObject.GetComponent<MeshRenderer>();
+        if (renderer != null)
+        {
+            Color color = renderer.material.color;
+            color.a = 175f / 255f;
+            renderer.material.color = color;
+        }
+    }
+    #endregion
+
+    #region Object Processing
+    private List<GameObject> GetObjectsByLayer(LayerMask layer)
+    {
+        return _2DEnvironmentGO.Keys.Where(obj => IsInLayerMask(obj, layer)).ToList();
+    }
+
+    private List<GameObject> GetMovableObjects()
+    {
+        List<GameObject> movableObjects = _2DEnvironmentGO.Keys
+            .Where(obj => IsInLayerMask(obj, _movableLayer))
+            .ToList();
+
+        movableObjects.Remove(gameObject);
+        return movableObjects;
+    }
+
+    private List<GameObject> ProcessMovableObjects(List<GameObject> staticObjects, List<GameObject> movableObjects)
+    {
+        List<GameObject> allObstacles = new List<GameObject>(staticObjects);
+
+        // Pour chaque objet mobile, trouve l'obstacle le plus proche et snap dessus
+        foreach (var movable in movableObjects)
+        {
+            Collider movableCollider = movable.GetComponent<Collider>();
+            if (movableCollider == null) continue;
+
+            GameObject closestObstacle = FindClosestObstacle(movableCollider, allObstacles, movable);
+
+            if (closestObstacle != null)
+            {
+                SnapMovableToSide(closestObstacle.transform, movable.transform);
+                Physics.SyncTransforms();
+                ResolveAllOverlaps(movable, allObstacles);
+                allObstacles.Add(movable);
+            }
+        }
+
+        return allObstacles;
+    }
+
+    private GameObject FindClosestObstacle(Collider movableCollider, List<GameObject> obstacles, GameObject movable)
+    {
+        GameObject closestObstacle = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (var obstacle in obstacles)
+        {
+            if (obstacle == movable) continue;
+
+            Collider obstacleCollider = obstacle.GetComponent<Collider>();
+            if (obstacleCollider == null) continue;
+
+            float distance = Vector3.Distance(
+                new Vector3(movableCollider.bounds.center.x, movableCollider.bounds.center.y, 0),
+                new Vector3(obstacleCollider.bounds.center.x, obstacleCollider.bounds.center.y, 0)
+            );
+
+            // Vérifie si l'objet mobile est dans la zone d'influence de l'obstacle
+            Bounds expandedBounds = obstacleCollider.bounds;
+            expandedBounds.Expand(movableCollider.bounds.size.x + 0.1f);
+
+            if (expandedBounds.Contains(new Vector3(movableCollider.bounds.center.x, movableCollider.bounds.center.y, obstacleCollider.bounds.center.z)))
+            {
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestObstacle = obstacle;
+                }
+            }
+        }
+
+        return closestObstacle;
+    }
+    #endregion
+
+    #region Player Processing
+    private void ProcessPlayer(int coordToTeleport, List<GameObject> allObstacles)
+    {
+        MovePlayerTo2D(coordToTeleport);
+        PositionPlayerRelativeToObstacles(allObstacles);
+    }
+
+    private void MovePlayerTo2D(int zPosition)
+    {
+        gameObject.transform.position = new Vector3(
+            gameObject.transform.position.x,
+            gameObject.transform.position.y,
+            zPosition
+        );
+
+        gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
+    }
+
+    private void PositionPlayerRelativeToObstacles(List<GameObject> allObstacles)
+    {
+        _2DEnvironmentGO[gameObject] = gameObject.transform.position;
+
+        Collider playerCollider = gameObject.GetComponent<Collider>();
+        if (playerCollider == null) return;
+
+        Physics.SyncTransforms();
+
+        List<GameObject> nearbyObstacles = FindNearbyObstacles(playerCollider, allObstacles);
+
+        if (nearbyObstacles.Count > 0)
+        {
+            PushPlayerOutOfObstacles(playerCollider, nearbyObstacles);
+        }
+    }
+
+    private List<GameObject> FindNearbyObstacles(Collider playerCollider, List<GameObject> allObstacles)
+    {
+        const float searchRadius = 5f;
+        List<GameObject> nearbyObstacles = new List<GameObject>();
+
+        foreach (var obstacle in allObstacles)
+        {
+            Collider obstacleCollider = obstacle.GetComponent<Collider>();
+            if (obstacleCollider == null) continue;
+
+            float distance = Vector3.Distance(
+                new Vector3(playerCollider.bounds.center.x, playerCollider.bounds.center.y, 0),
+                new Vector3(obstacleCollider.bounds.center.x, obstacleCollider.bounds.center.y, 0)
+            );
+
+            if (distance < searchRadius)
+            {
+                nearbyObstacles.Add(obstacle);
+            }
+        }
+
+        return nearbyObstacles;
+    }
+
+    private void PushPlayerOutOfObstacles(Collider playerCollider, List<GameObject> nearbyObstacles)
+    {
+        // Calcule la zone totale occupée par tous les obstacles proches
+        (float leftBound, float rightBound) = CalculateObstacleBounds(nearbyObstacles);
+
+        float playerX = playerCollider.bounds.center.x;
+        float distanceToLeft = playerX - leftBound;
+        float distanceToRight = rightBound - playerX;
+
+        // Pousse le player vers le côté le plus proche pour sortir de la zone d'obstacles
+        Vector3 newPosition = CalculateNewPlayerPosition(playerCollider, leftBound, rightBound, distanceToLeft, distanceToRight);
+
+        gameObject.transform.position = newPosition;
+        _2DEnvironmentGO[gameObject] = newPosition;
+        Physics.SyncTransforms();
+    }
+
+    private (float leftBound, float rightBound) CalculateObstacleBounds(List<GameObject> obstacles)
+    {
+        float leftBound = float.MaxValue;
+        float rightBound = float.MinValue;
+
+        foreach (var obstacle in obstacles)
+        {
+            Collider obstacleCollider = obstacle.GetComponent<Collider>();
+            leftBound = Mathf.Min(leftBound, obstacleCollider.bounds.min.x);
+            rightBound = Mathf.Max(rightBound, obstacleCollider.bounds.max.x);
+        }
+
+        return (leftBound, rightBound);
+    }
+
+    private Vector3 CalculateNewPlayerPosition(Collider playerCollider, float leftBound, float rightBound, float distanceToLeft, float distanceToRight)
+    {
+        Vector3 newPosition = gameObject.transform.position;
+        const float safetyMargin = 1.0f;
+
+        if (distanceToLeft < distanceToRight)
+        {
+            // Pousse vers la gauche
+            float targetX = leftBound - playerCollider.bounds.extents.x - safetyMargin;
+            newPosition.x = gameObject.transform.position.x + (targetX - playerCollider.bounds.center.x);
+        }
+        else
+        {
+            // Pousse vers la droite
+            float targetX = rightBound + playerCollider.bounds.extents.x + safetyMargin;
+            newPosition.x = gameObject.transform.position.x + (targetX - playerCollider.bounds.center.x);
+        }
+
+        return newPosition;
+    }
+    #endregion
+
+    #region Restore 3D State
+    private void RestoreEnvironmentPositions()
+    {
+        foreach (var kvp in _allEnvironmentGO)
+        {
+            if (_2DEnvironmentGO.ContainsKey(kvp.Key))
+            {
+                if (HasObjectMoved(kvp.Key, kvp.Value))
+                {
+                    RestorePositionWithZCorrection(kvp.Key, kvp.Value);
+                }
+                else
+                {
+                    kvp.Key.transform.position = kvp.Value;
+                }
+            }
+            else
+            {
+                RestoreObjectFully(kvp.Key, kvp.Value);
+            }
+
+            if (IsInLayerMask(kvp.Key, _setActiveIn2D))
+            {
+                kvp.Key.SetActive(false);
+            }
+        }
+    }
+
+    private bool HasObjectMoved(GameObject obj, Vector3 originalPosition)
+    {
+        return Vector3.Distance(_2DEnvironmentGO[obj], obj.transform.position) > 0.01f;
+    }
+
+    private void RestorePositionWithZCorrection(GameObject obj, Vector3 originalPosition)
+    {
+        Vector3 newPosition = obj.transform.position;
+        newPosition.z = originalPosition.z;
+        obj.transform.position = newPosition;
+    }
+
+    private void RestoreObjectFully(GameObject obj, Vector3 originalPosition)
+    {
+        obj.transform.position = originalPosition;
+
+        MeshRenderer renderer = obj.GetComponent<MeshRenderer>();
+        if (renderer != null)
+        {
+            Color color = renderer.material.color;
+            color.a = 1f;
+            renderer.material.color = color;
+        }
+    }
+
+    private void RestorePlayerPosition()
+    {
+        if (_oldPlayerPos != Vector3.zero)
+        {
+            gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
+
+            Vector3 newPosition = gameObject.transform.position;
+            newPosition.z = _oldPlayerPos.z;
+            gameObject.transform.position = newPosition;
+        }
+    }
+    #endregion
+
+    #region Camera Management
+    private void SetCameraPriorities(int camera2DPriority, int camera3DPriority)
+    {
+        _camera2D.Priority = camera2DPriority;
+        _camera3D.Priority = camera3DPriority;
+    }
+    #endregion
+
+    #region Utils
+    public static bool IsInLayerMask(GameObject obj, LayerMask mask)
+    {
+        return ((1 << obj.layer) & mask) != 0;
+    }
+
+    private void SnapMovableToSide(Transform staticObj, Transform movable)
+    {
+        Collider staticCollider = staticObj.GetComponent<Collider>();
+        Collider movableCollider = movable.GetComponent<Collider>();
+
+        if (staticCollider == null || movableCollider == null) return;
+
+        Vector3 newPosition = movable.position;
+        float movableCenter = movableCollider.bounds.center.x;
+        float staticCenter = staticCollider.bounds.center.x;
+
+        if (movableCenter > staticCenter)
+        {
+            newPosition.x = staticCollider.bounds.max.x + movableCollider.bounds.extents.x;
+        }
+        else
+        {
+            newPosition.x = staticCollider.bounds.min.x - movableCollider.bounds.extents.x;
+        }
+
+        movable.position = newPosition;
+        _2DEnvironmentGO[movable.gameObject] = newPosition;
+        Physics.SyncTransforms();
+    }
+
+    private void ResolveAllOverlaps(GameObject movable, List<GameObject> allObstacles)
+    {
+        Collider movableCollider = movable.GetComponent<Collider>();
+        if (movableCollider == null) return;
+
+        int layerMask = ~_groundLayer.value;
+        const int maxIterations = 10;
+
+        // Itère jusqu'à ce qu'il n'y ait plus d'overlaps ou atteigne la limite d'itérations
+        for (int iteration = 0; iteration < maxIterations; iteration++)
+        {
+            Physics.SyncTransforms();
+
+            List<Collider> validOverlaps = FindValidOverlaps(movableCollider, movable, allObstacles, layerMask);
+
+            if (validOverlaps.Count == 0) break;
+
+            Collider closestOverlap = FindClosestOverlap(movableCollider, validOverlaps);
+
+            if (closestOverlap != null)
+            {
+                PushMovableAwayFromOverlap(movable, movableCollider, closestOverlap);
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    private List<Collider> FindValidOverlaps(Collider movableCollider, GameObject movable, List<GameObject> allObstacles, int layerMask)
+    {
+        Collider[] overlaps = Physics.OverlapBox(
+            center: movableCollider.bounds.center,
+            halfExtents: movableCollider.bounds.extents * 0.99f,
+            orientation: movable.transform.rotation,
+            layerMask: layerMask,
+            queryTriggerInteraction: QueryTriggerInteraction.Ignore
+        );
+
+        List<Collider> validOverlaps = new List<Collider>();
+        foreach (var overlap in overlaps)
+        {
+            if (overlap.gameObject != movable && allObstacles.Contains(overlap.gameObject))
+            {
+                validOverlaps.Add(overlap);
+            }
+        }
+
+        return validOverlaps;
+    }
+
+    private Collider FindClosestOverlap(Collider movableCollider, List<Collider> validOverlaps)
+    {
+        Collider closestOverlap = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (var overlap in validOverlaps)
+        {
+            float distance = Mathf.Abs(movableCollider.bounds.center.x - overlap.bounds.center.x);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestOverlap = overlap;
+            }
+        }
+
+        return closestOverlap;
+    }
+
+    private void PushMovableAwayFromOverlap(GameObject movable, Collider movableCollider, Collider obstacle)
+    {
+        float movableX = movableCollider.bounds.center.x;
+        float obstacleX = obstacle.bounds.center.x;
+        Vector3 newPosition = movable.transform.position;
+        const float safetyMargin = 0.01f;
+
+        // Pousse l'objet du côté opposé à l'obstacle
+        if (movableX > obstacleX)
+        {
+            float targetX = obstacle.bounds.max.x + movableCollider.bounds.extents.x + safetyMargin;
+            newPosition.x = movable.transform.position.x + (targetX - movableCollider.bounds.center.x);
+        }
+        else
+        {
+            float targetX = obstacle.bounds.min.x - movableCollider.bounds.extents.x - safetyMargin;
+            newPosition.x = movable.transform.position.x + (targetX - movableCollider.bounds.center.x);
+        }
+
+        movable.transform.position = newPosition;
+        _2DEnvironmentGO[movable] = newPosition;
+    }
+    #endregion
+
     //public void APressed()
     //{
     //    if (_isAlreadySpeaking == false)
@@ -467,5 +978,8 @@ public class PlayerMovement : MonoBehaviour
     //        _talkCameraScript.ZoomOut();
     //    }
     //}
+
     #endregion
+
+
 }

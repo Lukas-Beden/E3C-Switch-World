@@ -99,7 +99,7 @@ GameObject:
   - component: {fileID: 1968681925479307780}
   - component: {fileID: 1190293444077568595}
   - component: {fileID: 3651953731951413753}
-  - component: {fileID: 4016793243473605202}
+  - component: {fileID: 5973679843144717981}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -122,6 +122,7 @@ Transform:
   m_Children:
   - {fileID: 5617339453005782006}
   - {fileID: 7748474962917835741}
+  - {fileID: 2481740618477300380}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -157.525, z: 0}
 --- !u!54 &8815302089385845190
@@ -133,7 +134,7 @@ Rigidbody:
   m_GameObject: {fileID: 4880580501392400344}
   serializedVersion: 5
   m_Mass: 1
-  m_LinearDamping: 1000000
+  m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -186,16 +187,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bfc3b724cce939b47b1d721355f4f530, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _3DSpd: 10
-  _2DSpd: 5
+  _3DSpd: 8
+  _2DSpd: 6
   _acceleration: 8
   _brake: 5
   _glide: 3
+  _jumpForce: 6
+  _tookObjectPoint: {fileID: 5239269836361801877}
   _inputActions: {fileID: -944628639613478452, guid: 4dab6e3f3dba62345acba0fc2aa8605a, type: 3}
   _pushItemsActionReference: {fileID: -4232464914192229590, guid: 4dab6e3f3dba62345acba0fc2aa8605a, type: 3}
   _moveActionReference: {fileID: -8866770974887159259, guid: 4dab6e3f3dba62345acba0fc2aa8605a, type: 3}
   _switchModeActionReference: {fileID: -1773127881033611622, guid: 4dab6e3f3dba62345acba0fc2aa8605a, type: 3}
   _jumpActionReference: {fileID: -8424631149214004880, guid: 4dab6e3f3dba62345acba0fc2aa8605a, type: 3}
+  _pauseActionReference: {fileID: -5797355970560131115, guid: 4dab6e3f3dba62345acba0fc2aa8605a, type: 3}
+  _spawner: {fileID: 0}
+  _gameModeManager: {fileID: 0}
+  _camera2D: {fileID: 0}
+  _camera3D: {fileID: 0}
+  _environment: {fileID: 0}
+  _map: {fileID: 0}
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  _movableLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _2DObject:
+    serializedVersion: 2
+    m_Bits: 128
+  _3DObject:
+    serializedVersion: 2
+    m_Bits: 256
+  _setActiveIn2D:
+    serializedVersion: 2
+    m_Bits: 512
+  _delayMidJump: 1
+  _elevateJumpGravity: {x: 0, y: -3, z: 0}
+  _fallenJumpGravity: {x: 0, y: -20, z: 0}
+  _defaultGravity: {x: 0, y: -9.81, z: 0}
+  _menuPauseManager: {fileID: 0}
 --- !u!114 &3651953731951413753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209,7 +239,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _currentPlayerState: 0
---- !u!114 &4016793243473605202
+--- !u!114 &5973679843144717981
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -218,10 +248,43 @@ MonoBehaviour:
   m_GameObject: {fileID: 4880580501392400344}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c1407c8a03c33241bacee960a8db693, type: 3}
+  m_Script: {fileID: 11500000, guid: 2db4b11a492ea0d409bedac99cf8059c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentGameMode: 1
+  _maxHealth: 8
+  heartPrefab: {fileID: 2804878981352657168, guid: ab2c90d12c5c8cf4da7892f0aa5739dd, type: 3}
+  container: {fileID: 0}
+--- !u!1 &5239269836361801877
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2481740618477300380}
+  m_Layer: 0
+  m_Name: TookObjectPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2481740618477300380
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5239269836361801877}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.47, y: 0, z: 2.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8395506986162351990}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7220210578631707956
 GameObject:
   m_ObjectHideFlags: 0
