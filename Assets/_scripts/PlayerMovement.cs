@@ -77,6 +77,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 _oldPlayerPos = new();
     private Dictionary<GameObject, Vector3> _allEnvironmentGO = new();
     private Dictionary<GameObject, Vector3> _2DEnvironmentGO = new();
+    private GameObject[] _2DAssets;
+    private GameObject[] _3DAssets;
 
     private Vector3 _dir;
     private Vector2 _moveAmt;
@@ -131,6 +133,9 @@ public class PlayerMovement : MonoBehaviour
         _groundLayer = LayerMask.GetMask("Ground");
         _movableLayer = LayerMask.GetMask("IsMovable");
         _animator = GetComponent<Animator>();
+
+        _2DAssets = GameObject.FindGameObjectsWithTag("2DAssets");
+        _3DAssets = GameObject.FindGameObjectsWithTag("3DAssets");
 
         transform.position = _spawner.transform.position;
 
@@ -498,6 +503,8 @@ public class PlayerMovement : MonoBehaviour
             transform.position = new Vector3(transform.position.x, transform.position.y - 0.25f, transform.position.z);
             _wheelchair.transform.position = new Vector3(_wheelchair.transform.position.x, _wheelchair.transform.position.y + 0.25f, _wheelchair.transform.position.z);
             coll.center = new Vector3(coll.center.x, coll.center.y + 0.25f, coll.center.z);
+            foreach (GameObject go in _2DAssets) { go.SetActive(true); }
+            foreach (GameObject go in _3DAssets) { go.SetActive(false); }
             SwitchTo2DMode();
         }
         else
@@ -507,6 +514,8 @@ public class PlayerMovement : MonoBehaviour
             transform.position = new Vector3(transform.position.x, transform.position.y + 0.25f, transform.position.z);
             _wheelchair.transform.position = new Vector3(_wheelchair.transform.position.x, _wheelchair.transform.position.y - 0.25f, _wheelchair.transform.position.z);
             coll.center = new Vector3(coll.center.x, coll.center.y - 0.25f, coll.center.z);
+            foreach (GameObject go in _2DAssets) { go.SetActive(false); }
+            foreach (GameObject go in _3DAssets) { go.SetActive(true); }
             SwitchTo3DMode();
         }
     }
