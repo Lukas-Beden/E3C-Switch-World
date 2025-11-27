@@ -2,6 +2,7 @@ using NUnit.Framework.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Playables;
@@ -28,6 +29,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _glide = 10.0f;
     [Range(1.0f, 15.0f)]
     [SerializeField] private float _jumpForce = 6.0f;
+
+    [SerializeField] GameObject _tookObjectPoint;
 
 
     [Header("======| Global Input Action Asset |======")]
@@ -63,6 +66,10 @@ public class PlayerMovement : MonoBehaviour
 
     private LayerMask _groundLayer;
     private LayerMask _movableLayer;
+
+    public enum CubeFace { Front, Back, Right, Left, Top, Bottom }
+
+    public CubeFace selectedFace;
 
     [Header("======| Gravity Changer |======")]
     [Header("")]
@@ -130,7 +137,39 @@ public class PlayerMovement : MonoBehaviour
         #endregion
     }
 
-    
+    Vector3 GetFaceLocalOffset(CubeFace face, Vector3 scale)
+    {
+        Vector3 halfScale = scale / 2f;
+        switch (face)
+        {
+            case CubeFace.Front: return new Vector3(0, 0, halfScale.z);
+            case CubeFace.Back: return new Vector3(0, 0, -halfScale.z);
+            case CubeFace.Right: return new Vector3(halfScale.x, 0, 0);
+            case CubeFace.Left: return new Vector3(-halfScale.x, 0, 0);
+            case CubeFace.Top: return new Vector3(0, halfScale.y, 0);
+            case CubeFace.Bottom: return new Vector3(0, -halfScale.y, 0);
+            default: return Vector3.zero;
+        }
+    }
+
+
+    CubeFace GetFaceFromMove(Vector2 move, float deadzone)
+    {
+        if (Mathf.Abs(move.x) > Mathf.Abs(move.y))
+        {
+            if (move.x > deadzone) return CubeFace.Right;
+            if (move.x < -deadzone) return CubeFace.Left;
+        }
+        else
+        {
+            if (move.y > deadzone) return CubeFace.Front;
+            if (move.y < -deadzone) return CubeFace.Back;
+        }
+        return CubeFace.Back;
+    }
+
+
+
 
     private void Update()
     {
@@ -209,9 +248,10 @@ public class PlayerMovement : MonoBehaviour
     #region MovingEvents
     private void Moving_canceled(InputAction.CallbackContext obj)
     {
-        if (_playerState.IsMovingObject()) return;
+        if (_playerState.IsMovingObject() == false)
+            _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
 
-        _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
+        _moveAmt = new Vector3(0, 0, 0);
     }
 
     private void Moving_performed(InputAction.CallbackContext obj)
@@ -270,32 +310,31 @@ public class PlayerMovement : MonoBehaviour
     #region Movement
     private void Move()
     {
-        Vector3 direction = Vector3.zero;
+        _dir = Vector3.zero;
 
         if (_gameMode.Is2DMode())
         {
-            direction = new Vector3(_moveAmt.x, 0, 0);
+            _dir = new Vector3(_moveAmt.x, 0, 0);
 
-            Vector3 targetPos = _rigidbody.position + direction * _2DSpd * Time.deltaTime * Time.timeScale;
+            Vector3 targetPos = _rigidbody.position + _dir * _2DSpd * Time.deltaTime;
             _rigidbody.MovePosition(targetPos);
         }
         else if (_gameMode.Is3DMode())
         {
-            direction = new Vector3(_moveAmt.x, 0, _moveAmt.y);
+            _dir = new Vector3(_moveAmt.x, 0, _moveAmt.y);
 
-            _rigidbody.AddForce(direction.normalized * _3DSpd * Time.timeScale, ForceMode.Acceleration);
+            _rigidbody.AddForce(_dir.normalized * _3DSpd * Time.timeScale, ForceMode.Acceleration);
         }
 
-        if (direction.sqrMagnitude > 0.01f)
+        if (_dir.sqrMagnitude > 0.01f)
         {
-            transform.rotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.LookRotation(_dir);
         }
     }
 
     public void ResetMovement()
     {
-        _rigidbody.linearVelocity = Vector3.zero;
-        _velocity = Vector3.zero;
+        _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
     #endregion
 
@@ -334,7 +373,7 @@ public class PlayerMovement : MonoBehaviour
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, 0.01f, _groundLayer) && _rigidbody.linearVelocity.z != 0.0f)
+        if (Physics.Raycast(ray, out hit, 0.1f, _groundLayer))
             _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
     #endregion
@@ -355,13 +394,35 @@ public class PlayerMovement : MonoBehaviour
 
     private void MoveObject()
     {
-        float posY = transform.position.y + _tookObject.transform.position.y / 2;
-        Vector3 newVec = new Vector3(transform.position.x, posY, transform.position.z);
+        float deadzone = 0.01f;
 
-        _tookObject.transform.position = newVec + transform.forward;
+        if (_moveAmt.sqrMagnitude > deadzone * deadzone)
+        {
+            Physics.IgnoreCollision(GetComponent<Collider>(), _tookObject.GetComponent<Collider>(), true);
+
+            BoxCollider box = _tookObject.GetComponent<BoxCollider>();
+
+            float angle = Mathf.Atan2(_moveAmt.x, _moveAmt.y) * Mathf.Rad2Deg;
+            Quaternion rot = Quaternion.Euler(0f, angle, 0f);
+            _tookObject.transform.rotation = rot;
+
+            CubeFace face = GetFaceFromMove(_moveAmt, deadzone);
+
+            Vector3 localOffset = GetFaceLocalOffset(face, _tookObject.transform.localScale);
+
+            Vector3 finalPos = _tookObjectPoint.transform.position + _tookObjectPoint.transform.rotation * localOffset;
+
+            _tookObject.transform.position = Vector3.MoveTowards(
+                _tookObject.transform.position,
+                finalPos,
+                20f * Time.deltaTime
+            );
+        }
     }
+
     private void DropObject()
     {
+        Physics.IgnoreCollision(GetComponent<Collider>(), _tookObject.GetComponent<Collider>(), false);
         _tookObject = null;
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
     }
