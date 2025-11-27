@@ -197,7 +197,6 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateState();
-        Debug.Log(_playerState.GetPlayerState());
     }
 
     private void UpdateState()
