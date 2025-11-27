@@ -197,6 +197,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateState();
+        Debug.Log(_playerState.GetPlayerState());
     }
 
     private void UpdateState()
@@ -217,7 +218,7 @@ public class PlayerMovement : MonoBehaviour
                 break;
             case PlayerState.PlayerStateEnum.JUMPING:
                 Move();
-                ResetJump();
+                StartCoroutine(ResetJump(0.1f));
                 break;
             case PlayerState.PlayerStateEnum.MOVINGOBJECT:
                 Move();
@@ -384,22 +385,29 @@ public class PlayerMovement : MonoBehaviour
     {
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
-        LayerMask canJumpLayer = _groundLayer + _movableLayer;
+        LayerMask canJumpLayer = _groundLayer | _movableLayer;
 
-        if (Physics.Raycast(ray, out hit, 0.1f, canJumpLayer) && _rigidbody.linearVelocity.z == 0.0f)
+        if (Physics.Raycast(ray, out hit, 0.1f, canJumpLayer) && Mathf.Abs(_rigidbody.linearVelocity.z) < 0.1f)
         {
             _playerState.SetState(PlayerState.PlayerStateEnum.JUMPING);
             _rigidbody.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
         }
     }
 
-    private void ResetJump()
+    IEnumerator ResetJump(float delay)
     {
+        yield return new WaitForSeconds(delay);
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
+        LayerMask canJumpLayer = _groundLayer | _movableLayer;
 
-        if (Physics.Raycast(ray, out hit, 0.1f, _groundLayer))
-            _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
+        if (Physics.Raycast(ray, out hit, 0.1f, canJumpLayer))
+        {
+            if (_moveAmt.sqrMagnitude < 0.01f)
+                _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
+            else
+                _playerState.SetState(PlayerState.PlayerStateEnum.WALK);
+        }
     }
     #endregion
 
