@@ -582,7 +582,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c1407c8a03c33241bacee960a8db693, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _currentGameMode: 1
+  _currentGameMode: 0
 --- !u!4 &291547863
 Transform:
   m_ObjectHideFlags: 0
@@ -1511,7 +1511,7 @@ Camera:
   far clip plane: 1000
   field of view: 60.000004
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 4
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1535,8 +1535,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 899521333}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.62, y: 2.4745598, z: -18.93}
+  m_LocalRotation: {x: 0.26723832, y: 0, z: 0, w: 0.9636305}
+  m_LocalPosition: {x: 0.62, y: 8.2001295, z: -21.78751}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1574,6 +1574,32 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   CustomBlends: {fileID: 0}
+--- !u!1 &972681104 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2905407351910878274, guid: 9ff015410bf4d8c489375faa3c9c57a5, type: 3}
+  m_PrefabInstance: {fileID: 2193558035202518647}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &972681106
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 972681104}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.082125, y: 1.0189863, z: 2.0821247}
+  m_Center: {x: 0, y: 0.5094932, z: 0}
 --- !u!1 &976150801
 GameObject:
   m_ObjectHideFlags: 0
@@ -3361,12 +3387,16 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1358141942880868990, guid: efa0b86dccacf2347975232c6d55b6cf, type: 3}
       propertyPath: Priority.m_Value
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 1358141942880868990, guid: efa0b86dccacf2347975232c6d55b6cf, type: 3}
       propertyPath: Target.TrackingTarget
       value: 
       objectReference: {fileID: 1420096526628053665}
+    - target: {fileID: 1525904264806595518, guid: efa0b86dccacf2347975232c6d55b6cf, type: 3}
+      propertyPath: Priority.m_Value
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 1525904264806595518, guid: efa0b86dccacf2347975232c6d55b6cf, type: 3}
       propertyPath: Target.TrackingTarget
       value: 
@@ -3444,7 +3474,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2905407351910878274, guid: 9ff015410bf4d8c489375faa3c9c57a5, type: 3}
       propertyPath: m_Layer
-      value: 0
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6537231283400260544, guid: 9ff015410bf4d8c489375faa3c9c57a5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.38
       objectReference: {fileID: 0}
     - target: {fileID: 8907692631421477586, guid: 9ff015410bf4d8c489375faa3c9c57a5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3489,7 +3523,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2905407351910878274, guid: 9ff015410bf4d8c489375faa3c9c57a5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 972681106}
   m_SourcePrefab: {fileID: 100100000, guid: 9ff015410bf4d8c489375faa3c9c57a5, type: 3}
 --- !u!1001 &2424456905862850612
 PrefabInstance:
@@ -3885,10 +3922,6 @@ PrefabInstance:
       propertyPath: _gameModeManager
       value: 
       objectReference: {fileID: 291547861}
-    - target: {fileID: 1190293444077568595, guid: 2c9199993e698fe44978593f44ada904, type: 3}
-      propertyPath: _switchAudioClip
-      value: 
-      objectReference: {fileID: 8300000, guid: dbc09f350a4081e43b847894d77e1cd6, type: 3}
     - target: {fileID: 1190293444077568595, guid: 2c9199993e698fe44978593f44ada904, type: 3}
       propertyPath: _menuPauseManager
       value: 

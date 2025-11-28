@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Cinemachine;
 using Unity.Mathematics;
-using UnityEditor.Animations;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -212,6 +210,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateState();
+        Debug.Log(_playerState.GetPlayerState());
     }
 
     private void UpdateState()
@@ -237,7 +236,6 @@ public class PlayerMovement : MonoBehaviour
                 StartCoroutine(ResetJump(0.1f));
                 _animator.SetBool("IsGrabbing", false);
                 _animator.SetTrigger("JumpTrigger");
-                //ResetJump();
                 break;
             case PlayerState.PlayerStateEnum.MOVINGOBJECT:
                 Move();
@@ -408,7 +406,7 @@ public class PlayerMovement : MonoBehaviour
     {
         while (true)
         {
-            int index = UnityEngine.Random.Range(0, _walkAudioClips.Length);
+            int index = UnityEngine.Random.Range(0, _wheelAudioClips.Length);
             float delay = UnityEngine.Random.Range(0.5f, 1.5f);
 
             SFXManager.Instance.PlaySFXClip(_wheelAudioClips[index], transform, 1.0f);
@@ -458,6 +456,7 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator ResetJump(float delay)
     {
         yield return new WaitForSeconds(delay);
+
         Ray ray = new Ray(transform.position, Vector3.down);
         RaycastHit hit;
         LayerMask canJumpLayer = _groundLayer | _movableLayer;
@@ -559,9 +558,9 @@ public class PlayerMovement : MonoBehaviour
             _wheelchair.SetActive(false);
             transform.position = new Vector3(transform.position.x, transform.position.y - 0.25f, transform.position.z);
             _wheelchair.transform.position = new Vector3(_wheelchair.transform.position.x, _wheelchair.transform.position.y + 0.25f, _wheelchair.transform.position.z);
-            coll.center = new Vector3(coll.center.x, coll.center.y + 0.25f, coll.center.z);
-            foreach (GameObject go in _2DAssets) { go.SetActive(true); }
-            foreach (GameObject go in _3DAssets) { go.SetActive(false); }
+            coll.center = new Vector3(coll.center.x, coll.center.y , coll.center.z);
+            foreach (GameObject go in _2DAssets) { go.GetComponent<MeshRenderer>().enabled = true; }
+            foreach (GameObject go in _3DAssets) { go.GetComponent<MeshRenderer>().enabled = false; }
             SwitchTo2DMode();
         }
         else
@@ -570,9 +569,9 @@ public class PlayerMovement : MonoBehaviour
             _wheelchair.SetActive(true);
             transform.position = new Vector3(transform.position.x, transform.position.y + 0.25f, transform.position.z);
             _wheelchair.transform.position = new Vector3(_wheelchair.transform.position.x, _wheelchair.transform.position.y - 0.25f, _wheelchair.transform.position.z);
-            coll.center = new Vector3(coll.center.x, coll.center.y - 0.25f, coll.center.z);
-            foreach (GameObject go in _2DAssets) { go.SetActive(false); }
-            foreach (GameObject go in _3DAssets) { go.SetActive(true); }
+            coll.center = new Vector3(coll.center.x, coll.center.y , coll.center.z);
+            foreach (GameObject go in _2DAssets) { go.GetComponent<MeshRenderer>().enabled = false; }
+            foreach (GameObject go in _3DAssets) { go.GetComponent<MeshRenderer>().enabled = true; }
             SwitchTo3DMode();
         }
     }
