@@ -237,7 +237,7 @@ public class PlayerMovement : MonoBehaviour
                 StartCoroutine(ResetJump(0.1f));
                 _animator.SetBool("IsGrabbing", false);
                 _animator.SetTrigger("JumpTrigger");
-                ResetJump();
+                //ResetJump();
                 break;
             case PlayerState.PlayerStateEnum.MOVINGOBJECT:
                 Move();
