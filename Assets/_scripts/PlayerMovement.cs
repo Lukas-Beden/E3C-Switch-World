@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Cinemachine;
+using Unity.Mathematics;
+using UnityEditor.Animations;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -55,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("")]
     [SerializeField] private GameObject _environment;
     [SerializeField] private GameObject _map;
+    [SerializeField] private GameObject _wheelchair;
 
     [Header("======| Player Sounds |======")]
     [Header("")]
@@ -74,10 +78,13 @@ public class PlayerMovement : MonoBehaviour
     private PlayerState _playerState;
     private GameMode _gameMode;
     private Rigidbody _rigidbody;
+    private Animator _animator;
 
     private Vector3 _oldPlayerPos = new();
     private Dictionary<GameObject, Vector3> _allEnvironmentGO = new();
     private Dictionary<GameObject, Vector3> _2DEnvironmentGO = new();
+    private GameObject[] _2DAssets;
+    private GameObject[] _3DAssets;
 
     private Vector3 _dir;
     private Vector2 _moveAmt;
@@ -133,6 +140,10 @@ public class PlayerMovement : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         _groundLayer = LayerMask.GetMask("Ground");
         _movableLayer = LayerMask.GetMask("IsMovable");
+        _animator = GetComponent<Animator>();
+
+        _2DAssets = GameObject.FindGameObjectsWithTag("2DAssets");
+        _3DAssets = GameObject.FindGameObjectsWithTag("3DAssets");
 
         transform.position = _spawner.transform.position;
 
@@ -198,9 +209,6 @@ public class PlayerMovement : MonoBehaviour
         return selectedFace;
     }
 
-
-
-
     private void Update()
     {
         UpdateState();
@@ -214,9 +222,12 @@ public class PlayerMovement : MonoBehaviour
         {
             case PlayerState.PlayerStateEnum.IDLE:
                 _moveAmt = Vector2.zero;
+                _animator.SetBool("IsGrabbing", false);
+                _animator.SetBool("IsMoving", false);
                 break;
             case PlayerState.PlayerStateEnum.WALK:
                 Move();
+                _animator.SetBool("IsGrabbing", false);
                 break;
             case PlayerState.PlayerStateEnum.TALKING:
                 MoveCamToTalk();
@@ -224,10 +235,14 @@ public class PlayerMovement : MonoBehaviour
             case PlayerState.PlayerStateEnum.JUMPING:
                 Move();
                 StartCoroutine(ResetJump(0.1f));
+                _animator.SetBool("IsGrabbing", false);
+                _animator.SetTrigger("JumpTrigger");
+                ResetJump();
                 break;
             case PlayerState.PlayerStateEnum.MOVINGOBJECT:
                 Move();
                 MoveObject();
+                _animator.SetBool("IsGrabbing", true);
                 break;
         }
     }
@@ -297,7 +312,7 @@ public class PlayerMovement : MonoBehaviour
         float deadzone = 0.01f;
 
         if (_gameMode.Is2DMode() && Mathf.Abs(move.y) > deadzone) return;
-
+        _animator.SetBool("IsMoving", true);
         _moveAmt = move;
     }
 
@@ -536,12 +551,28 @@ public class PlayerMovement : MonoBehaviour
     private void SwitchWorld()
     {
         SFXManager.Instance.PlaySFXClip(_switchAudioClip, transform, 1.0f);
+        CapsuleCollider coll = GetComponent<CapsuleCollider>();
+
         if (_gameMode.Is2DMode())
         {
+            _animator.SetBool("Is3DWorld", false);
+            _wheelchair.SetActive(false);
+            transform.position = new Vector3(transform.position.x, transform.position.y - 0.25f, transform.position.z);
+            _wheelchair.transform.position = new Vector3(_wheelchair.transform.position.x, _wheelchair.transform.position.y + 0.25f, _wheelchair.transform.position.z);
+            coll.center = new Vector3(coll.center.x, coll.center.y + 0.25f, coll.center.z);
+            foreach (GameObject go in _2DAssets) { go.SetActive(true); }
+            foreach (GameObject go in _3DAssets) { go.SetActive(false); }
             SwitchTo2DMode();
         }
         else
         {
+            _animator.SetBool("Is3DWorld", true);
+            _wheelchair.SetActive(true);
+            transform.position = new Vector3(transform.position.x, transform.position.y + 0.25f, transform.position.z);
+            _wheelchair.transform.position = new Vector3(_wheelchair.transform.position.x, _wheelchair.transform.position.y - 0.25f, _wheelchair.transform.position.z);
+            coll.center = new Vector3(coll.center.x, coll.center.y - 0.25f, coll.center.z);
+            foreach (GameObject go in _2DAssets) { go.SetActive(false); }
+            foreach (GameObject go in _3DAssets) { go.SetActive(true); }
             SwitchTo3DMode();
         }
     }

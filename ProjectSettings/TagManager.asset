@@ -8,6 +8,8 @@ TagManager:
   - PlayButton
   - ExitButton
   - OtherButton
+  - 2DAssets
+  - 3DAssets
   layers:
   - Default
   - TransparentFX
