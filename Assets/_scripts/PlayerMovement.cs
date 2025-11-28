@@ -1,15 +1,10 @@
-using NUnit.Framework.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Cinemachine;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Playables;
-using UnityEngine.Windows;
-
 
 
 [RequireComponent(typeof(Rigidbody))]
@@ -32,7 +27,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _jumpForce = 6.0f;
 
     [SerializeField] GameObject _tookObjectPoint;
-
 
     [Header("======| Global Input Action Asset |======")]
     [Header("")]
@@ -61,6 +55,17 @@ public class PlayerMovement : MonoBehaviour
     [Header("")]
     [SerializeField] private GameObject _environment;
     [SerializeField] private GameObject _map;
+
+    [Header("======| Player Sounds |======")]
+    [Header("")]
+    [SerializeField] private AudioClip _jumpAudioClip;
+    [SerializeField] private AudioClip[] _walkAudioClips;
+    [SerializeField] private AudioClip[] _wheelAudioClips;
+    [SerializeField] private AudioClip _takeObjectAudioClip;
+    [SerializeField] private AudioClip _dropObjectAudioClip;
+    [SerializeField] private AudioClip _hurtAudioClip;
+    [SerializeField] private AudioClip _fallAudioClip;
+    [SerializeField] private AudioClip _switchAudioClip;
 
     private bool _isAlreadySpeaking = false;
     private bool _isTalking = false;
@@ -107,6 +112,8 @@ public class PlayerMovement : MonoBehaviour
 
     private float _timerResetJump = 0.0f;
     private float _delayResetJump = 1.0f;
+
+    private Coroutine _walkCoroutine;
 
     private void OnEnable()
     {
@@ -201,7 +208,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateState()
     {
-        //temporary, will need another input logic with another ActionMap
         if (_gameMode.IsMenuMode()) return;
 
         switch (_playerState.GetPlayerState())
@@ -276,7 +282,13 @@ public class PlayerMovement : MonoBehaviour
             _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
 
         _saveMoveAmt = _moveAmt;
-        _moveAmt = new Vector3(0, 0, 0);
+        _moveAmt = new Vector2(0, 0);
+
+        if (_walkCoroutine != null)
+        {
+            StopCoroutine(_walkCoroutine);
+            _walkCoroutine = null;
+        }
     }
 
     private void Moving_performed(InputAction.CallbackContext obj)
@@ -343,18 +355,52 @@ public class PlayerMovement : MonoBehaviour
 
             Vector3 targetPos = _rigidbody.position + _dir * _2DSpd * Time.deltaTime;
             _rigidbody.MovePosition(targetPos);
+
+            if (_walkCoroutine == null && _playerState.IsJumping() == false)
+                _walkCoroutine = StartCoroutine(PlayWalkSound());
         }
         else if (_gameMode.Is3DMode())
         {
             _dir = new Vector3(_moveAmt.x, 0, _moveAmt.y);
 
             _rigidbody.AddForce(_dir.normalized * _3DSpd * Time.timeScale, ForceMode.Acceleration);
+            
+            if (_walkCoroutine == null && _playerState.IsJumping() == false)
+                _walkCoroutine = StartCoroutine(PlayWheelSound());
         }
 
         if (_dir.sqrMagnitude > 0.01f)
         {
             transform.rotation = Quaternion.LookRotation(_dir);
         }
+    }
+
+    IEnumerator PlayWalkSound()
+    {
+        while (true)
+        {
+            int index = UnityEngine.Random.Range(0, _walkAudioClips.Length);
+            float delay = UnityEngine.Random.Range(0.5f, 1.5f);
+
+            SFXManager.Instance.PlaySFXClip(_walkAudioClips[index], transform, 1.0f);
+            yield return new WaitForSeconds(delay);
+        }
+
+        _walkCoroutine = null;
+    }
+
+    IEnumerator PlayWheelSound()
+    {
+        while (true)
+        {
+            int index = UnityEngine.Random.Range(0, _walkAudioClips.Length);
+            float delay = UnityEngine.Random.Range(0.5f, 1.5f);
+
+            SFXManager.Instance.PlaySFXClip(_wheelAudioClips[index], transform, 1.0f);
+            yield return new WaitForSeconds(delay);
+        }
+
+        _walkCoroutine = null;
     }
 
     public void ResetMovement()
@@ -390,6 +436,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _playerState.SetState(PlayerState.PlayerStateEnum.JUMPING);
             _rigidbody.AddForce(Vector3.up * _jumpForce, ForceMode.Impulse);
+            SFXManager.Instance.PlaySFXClip(_jumpAudioClip, transform, 1.0f);
         }
     }
 
@@ -420,6 +467,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _playerState.SetState(PlayerState.PlayerStateEnum.MOVINGOBJECT);
             _tookObject = hit.transform.gameObject;
+            SFXManager.Instance.PlaySFXClip(_takeObjectAudioClip, transform, 1.0f);
             // + cameraZoom
         }
     }
@@ -460,6 +508,7 @@ public class PlayerMovement : MonoBehaviour
         Physics.IgnoreCollision(GetComponent<Collider>(), _tookObject.GetComponent<Collider>(), false);
         _tookObject = null;
         _playerState.SetState(PlayerState.PlayerStateEnum.IDLE);
+        SFXManager.Instance.PlaySFXClip(_dropObjectAudioClip, transform, 1.0f);
     }
     #endregion
 
@@ -486,6 +535,7 @@ public class PlayerMovement : MonoBehaviour
     #region SwitchWorld
     private void SwitchWorld()
     {
+        SFXManager.Instance.PlaySFXClip(_switchAudioClip, transform, 1.0f);
         if (_gameMode.Is2DMode())
         {
             SwitchTo2DMode();

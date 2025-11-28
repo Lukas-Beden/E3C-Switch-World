@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5563826200039129399}
   - component: {fileID: 7675135306011674328}
   - component: {fileID: 4722155985736197554}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: FinishPoint
   m_TagString: Untagged
   m_Icon: {fileID: 6519382022992737161, guid: 0000000000000000d000000000000000, type: 0}
@@ -68,6 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d7bb669ba63cfc459eb921e0445258a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _winAudioClip: {fileID: 8300000, guid: f5b2d59c717473c48b9dda197bede9f0, type: 3}
 --- !u!33 &7675135306011674328
 MeshFilter:
   m_ObjectHideFlags: 0

@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class FinishLevel : MonoBehaviour
 {
+    [SerializeField] private AudioClip _winAudioClip;
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
@@ -13,6 +14,7 @@ public class FinishLevel : MonoBehaviour
             else
                 indexLevelToLoad = SceneManager.GetActiveScene().buildIndex + 1;
 
+            SFXManager.Instance.PlaySFXClip(_winAudioClip, transform, 1.0f);
             SceneManager.LoadScene(indexLevelToLoad);
         }
     }

@@ -100,6 +100,7 @@ GameObject:
   - component: {fileID: 1190293444077568595}
   - component: {fileID: 3651953731951413753}
   - component: {fileID: 5973679843144717981}
+  - component: {fileID: 5322206779706723179}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -206,6 +207,21 @@ MonoBehaviour:
   _camera3D: {fileID: 0}
   _environment: {fileID: 0}
   _map: {fileID: 0}
+  _jumpAudioClip: {fileID: 8300000, guid: 89147d9441a654c43a544f19599c76cf, type: 3}
+  _walkAudioClips:
+  - {fileID: 8300000, guid: 688a26877c1c0454c950b27bb2e2b05d, type: 3}
+  - {fileID: 8300000, guid: 67edb79884c325a4cafa54af226781d9, type: 3}
+  - {fileID: 8300000, guid: e3e551703a621ca4c828901ae7bd7dd0, type: 3}
+  - {fileID: 8300000, guid: 0276708f02d1b974fb193f02755f1f10, type: 3}
+  - {fileID: 8300000, guid: a73c414f8ad41de4fad3c0845288c5a9, type: 3}
+  - {fileID: 8300000, guid: 32e5babe02c205948b90cf253492ce48, type: 3}
+  - {fileID: 8300000, guid: 2305675ea19f67f4195a5f097a75053f, type: 3}
+  - {fileID: 8300000, guid: f88ea12b3c1502f48bb44e2299abd548, type: 3}
+  _wheelAudioClip: {fileID: 8300000, guid: 97629688c394ea04e89ad4bc7be80646, type: 3}
+  _takeObjectAudioClip: {fileID: 8300000, guid: a1b1f6d2aecf79145a51002829d38bd6, type: 3}
+  _dropObjectAudioClip: {fileID: 8300000, guid: 860ae28038afffb4ab5cb8d536ae6582, type: 3}
+  _hurtAudioClip: {fileID: 8300000, guid: 4b7358ab9d238004d8c5815a3de6da42, type: 3}
+  _fallAudioClip: {fileID: 8300000, guid: 2aa86c449f95ddc4790507198a395bbc, type: 3}
   _groundLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -254,6 +270,28 @@ MonoBehaviour:
   _maxHealth: 8
   heartPrefab: {fileID: 2804878981352657168, guid: ab2c90d12c5c8cf4da7892f0aa5739dd, type: 3}
   container: {fileID: 0}
+--- !u!95 &5322206779706723179
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4880580501392400344}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1a8f7801a4491ab4b8b24f4df003512d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &5239269836361801877
 GameObject:
   m_ObjectHideFlags: 0

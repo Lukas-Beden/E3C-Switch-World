@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 36449686}
   m_Layer: 5
   m_Name: OptionsPannelButton
-  m_TagString: Untagged
+  m_TagString: CancelButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -447,7 +447,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &254749048
 RectTransform:
   m_ObjectHideFlags: 0
@@ -645,7 +645,7 @@ GameObject:
   - component: {fileID: 391715374}
   m_Layer: 5
   m_Name: ExitButton
-  m_TagString: Untagged
+  m_TagString: ExitButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1055,7 +1055,7 @@ GameObject:
   - component: {fileID: 766566137}
   m_Layer: 5
   m_Name: PlayButton
-  m_TagString: Untagged
+  m_TagString: PlayButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1096,7 +1096,7 @@ MonoBehaviour:
     m_Mode: 4
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 391715374}
-    m_SelectOnDown: {fileID: 1929791941}
+    m_SelectOnDown: {fileID: 1998085227}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
@@ -1207,9 +1207,9 @@ RectTransform:
   - {fileID: 1780254802}
   m_Father: {fileID: 254749048}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 400, y: -207.45279}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 325.77, y: 410.9}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &891304911
@@ -1418,8 +1418,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _SFXObject: {fileID: 8152327016295551299, guid: ad53966428dcaec45bc0a973fbe35df5, type: 3}
   _audioSourceMenu: {fileID: 1227609985}
+  _navigateAudioClip: {fileID: 8300000, guid: d1ea7f041e0e4e949bf525a3bfa5df4e, type: 3}
   _validateAudioClip: {fileID: 8300000, guid: ad520ce3fcd0d024aa27c86aef7c79d2, type: 3}
-  _audioClip: {fileID: 0}
+  _exitAudioClip: {fileID: 8300000, guid: 87f983a354d277341a301732fb27449b, type: 3}
+  _playAudioClip: {fileID: 8300000, guid: 2f8fa890b81812a488f3a485e3341444, type: 3}
+  _cancelAudioClip: {fileID: 8300000, guid: bf8f5eae3f3da3d40baf28cbdb9418f2, type: 3}
 --- !u!4 &1227609984
 Transform:
   m_ObjectHideFlags: 0
@@ -1984,7 +1987,7 @@ GameObject:
   - component: {fileID: 1697657082}
   m_Layer: 5
   m_Name: ExitCreditMenuButton
-  m_TagString: Untagged
+  m_TagString: CancelButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2004,9 +2007,9 @@ RectTransform:
   - {fileID: 1484540208}
   m_Father: {fileID: 254749048}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 400, y: -431.9084}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1697657082
@@ -2127,6 +2130,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1697657080}
   m_CullTransparentMesh: 1
+--- !u!1001 &1697900211
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 29782095373862077, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_Resource
+      value: 
+      objectReference: {fileID: 8300000, guid: 28bc03c725eaad840b2bb89350d5ec55, type: 3}
+    - target: {fileID: 937687061113239849, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_Name
+      value: MusicPlayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 127.35997
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 133.73193
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2469117615152720166, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 26730a86d3356e74384799fa6c01ceed, type: 3}
 --- !u!1 &1780254801
 GameObject:
   m_ObjectHideFlags: 0
@@ -2196,8 +2260,13 @@ MonoBehaviour:
     Kenney
 
 
-    Sounds
+    Music
     :
+
+    Fez OST by Disasterpeace
+
+
+    Sounds :
 
     RPG Maker
 
@@ -2232,8 +2301,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25
-  m_fontSizeBase: 25
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2270,7 +2339,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -50.06359, y: 0, z: 0, w: 0}
+  m_margin: {x: -50.06359, y: 0, z: -54.50374, w: -341.40103}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -2714,7 +2783,7 @@ GameObject:
   - component: {fileID: 1929791941}
   m_Layer: 5
   m_Name: OptionsButton
-  m_TagString: Untagged
+  m_TagString: OtherButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2778,7 +2847,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1929791942}
   m_OnClick:
     m_PersistentCalls:
@@ -3007,7 +3076,7 @@ GameObject:
   - component: {fileID: 1998085227}
   m_Layer: 5
   m_Name: CreditButton
-  m_TagString: Untagged
+  m_TagString: OtherButton
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3296,3 +3365,4 @@ SceneRoots:
   - {fileID: 166030634}
   - {fileID: 1312943886}
   - {fileID: 1227609984}
+  - {fileID: 1697900211}
