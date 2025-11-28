@@ -1,3 +1,4 @@
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -15,6 +16,7 @@ public class InteractWithPlayer : MonoBehaviour
     [Range(1, 30)]
     [SerializeField] private int _bumpForce = 6;
 
+    private CinemachineImpulseSource _impulse;
     private float _distance;
     private int _indexActualPath = 0;
 
@@ -22,6 +24,7 @@ public class InteractWithPlayer : MonoBehaviour
     {
         if (_target == null)
             _target = GameObject.FindGameObjectWithTag("Player");
+        _impulse = GetComponent<CinemachineImpulseSource>();
     }
 
     void Update()
@@ -80,6 +83,7 @@ public class InteractWithPlayer : MonoBehaviour
         {
             _target.GetComponent<HealthSystem>().GetDamage(_damageOnCollide);
             _target.GetComponent<PlayerMovement>().GetBumped(transform.forward * _bumpForce);
+            _impulse.GenerateImpulse();
         }
     }
 }
