@@ -4,6 +4,10 @@ Prototype de puzzle game en Unity où le joueur bascule entre une vue 2D et une 
 
 Projet basique réalisé en une semaine.
 
+![Enigme](images/E3C_Enigme.png)
+![Vue 2D](images/E3C_2D.png)
+![Vue 3D](images/E3C_3D.png)
+
 ## Mécaniques
 
 - Basculement en temps réel entre vue 2D et 3D
