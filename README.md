@@ -28,5 +28,5 @@ Ouvrir dans Unity Hub et lancer la scène principale.
 ## Équipe
 
 Projet réalisé en binôme en 1 semaine.  
-**Lukas Beden** — système de switch dimensionnel (assets, physique, transition).
+**Lukas Beden** — système de switch dimensionnel (assets, physique, transition).  
 **Erwan Hamida** — character controller, ennemi et level design.
