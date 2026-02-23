@@ -2,7 +2,7 @@
 
 Prototype de puzzle game en Unity où le joueur bascule entre une vue 2D et une vue 3D pour progresser dans les niveaux.
 
-Projet basique réalisé en une semaine.
+Projet réalisé en une semaine.
 
 ![Enigme](images/E3C_Enigme.png)
 ![Vue 2D](images/E3C_2D.png)
@@ -29,3 +29,4 @@ Ouvrir dans Unity Hub et lancer la scène principale.
 
 Projet réalisé en binôme en 1 semaine.  
 **Lukas Beden** — système de switch dimensionnel (assets, physique, transition).
+**Erwan Hamida** — character controller, ennemi et level design.
